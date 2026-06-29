@@ -1,0 +1,42 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+
+# Actuator configuration for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+eureka:
+  client:
+    # Don't register this Eureka Server with itself
+    register-with-eureka: false
+    # Don't fetch registry from other Eureka servers
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  server:
+    # Disable self-preservation mode for development
+    # In production, this should be true to prevent mass deregistration
+    enable-self-preservation: false
+    # How often to check for expired services (in milliseconds)
+    # Default is 60000ms (60 seconds), we set to 30000ms (30 seconds)
+    eviction-interval-timer-in-ms: 30000
+    # Response cache update interval
+    response-cache-update-interval-ms: 30000
+
+logging:
+  level:
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,103 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: hr-service
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:student_management_db}
+    username: ${DB_USERNAME:app_user}
+    password: ${DB_PASSWORD:app_password}
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  # Flyway Configuration
+  # IAM service is the sole owner of all DB migrations (shared database).
+  # hr-service must NOT run Flyway to avoid duplicate table creation errors.
+  flyway:
+    enabled: false
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.enterprise.studentmanagement.hr: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# File upload configuration
+file:
+  upload:
+    directory: ${FILE_UPLOAD_DIR:uploads}
+    max-size: 5242880 # 5MB
+
+# Security configuration
+encryption:
+  secret-key: ${ENCRYPTION_SECRET_KEY:}
+
+hmac:
+  secret-key: ${HMAC_SECRET_KEY:}
+
+# Springdoc OpenAPI configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    doc-expansion: none
+    display-request-duration: true
+
+# HR Service Configuration
+hr:
+  file-upload:
+    avatar-path: ${AVATAR_UPLOAD_PATH:uploads/avatars}
+    max-size: ${MAX_AVATAR_SIZE:5242880}  # 5MB in bytes
+    allowed-types: jpg,jpeg,png,gif

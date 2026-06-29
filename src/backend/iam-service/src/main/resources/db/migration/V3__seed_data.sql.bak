@@ -1,0 +1,1321 @@
+-- ============================================
+-- MIGRATION V3: Seed initial data
+-- 1 admin + 40 teachers + 50 students
+-- TVU SET - Truong Ky thuat va Cong nghe
+-- ============================================
+
+-- Use a DO block so we can use variables/references
+DO $$
+DECLARE
+    v_admin_id UUID;
+    v_t_00248 UUID;
+    v_t_00249 UUID;
+    v_t_00250 UUID;
+    v_t_00251 UUID;
+    v_t_00252 UUID;
+    v_t_00253 UUID;
+    v_t_00254 UUID;
+    v_t_00255 UUID;
+    v_t_00256 UUID;
+    v_t_00257 UUID;
+    v_t_00258 UUID;
+    v_t_00259 UUID;
+    v_t_00260 UUID;
+    v_t_00261 UUID;
+    v_t_00262 UUID;
+    v_t_00264 UUID;
+    v_t_00265 UUID;
+    v_t_00267 UUID;
+    v_t_00268 UUID;
+    v_t_00269 UUID;
+    v_t_00696 UUID;
+    v_t_00707 UUID;
+    v_t_00823 UUID;
+    v_t_02405 UUID;
+    v_t_03539 UUID;
+    v_t_03546 UUID;
+    v_t_03562 UUID;
+    v_t_06742 UUID;
+    v_t_10101 UUID;
+    v_t_12661 UUID;
+    v_t_12692 UUID;
+    v_t_12694 UUID;
+    v_t_12695 UUID;
+    v_t_12696 UUID;
+    v_t_12700 UUID;
+    v_t_12701 UUID;
+    v_t_12702 UUID;
+    v_t_12703 UUID;
+    v_t_12704 UUID;
+    v_t_12705 UUID;
+    v_class_oop UUID;
+    v_class_dsa UUID;
+    v_class_db UUID;
+    v_class_os UUID;
+    v_class_net UUID;
+    v_s_110122001 UUID;
+    v_s_110122002 UUID;
+    v_s_110122003 UUID;
+    v_s_110122004 UUID;
+    v_s_110122005 UUID;
+    v_s_110122249 UUID;
+    v_s_110122248 UUID;
+    v_s_110122246 UUID;
+    v_s_110122243 UUID;
+    v_s_110122106 UUID;
+    v_s_110122105 UUID;
+    v_s_110122103 UUID;
+    v_s_110122102 UUID;
+    v_s_110122076 UUID;
+    v_s_110122075 UUID;
+    v_s_110122074 UUID;
+    v_s_110122069 UUID;
+    v_s_110122071 UUID;
+    v_s_110122070 UUID;
+    v_s_110122068 UUID;
+    v_s_110122066 UUID;
+    v_s_110122055 UUID;
+    v_s_110122054 UUID;
+    v_s_110122064 UUID;
+    v_s_110122062 UUID;
+    v_s_110122061 UUID;
+    v_s_110122060 UUID;
+    v_s_110122059 UUID;
+    v_s_110122058 UUID;
+    v_s_110122056 UUID;
+    v_s_110122028 UUID;
+    v_s_110122101 UUID;
+    v_s_110122100 UUID;
+    v_s_110122099 UUID;
+    v_s_110122098 UUID;
+    v_s_110122097 UUID;
+    v_s_110122095 UUID;
+    v_s_110122094 UUID;
+    v_s_110122093 UUID;
+    v_s_110122092 UUID;
+    v_s_110122090 UUID;
+    v_s_110122089 UUID;
+    v_s_110122087 UUID;
+    v_s_110122086 UUID;
+    v_s_110122083 UUID;
+    v_s_110122082 UUID;
+    v_s_110122081 UUID;
+    v_s_110122079 UUID;
+    v_s_110122078 UUID;
+    v_s_110122077 UUID;
+BEGIN
+
+-- ==== ADMIN ====
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('admin', 'admin@tvu.edu.vn', '$2b$10$vv..Wb8qqh21ffJSuDMbnec.uqlrtJAt4mUWWVgHNRrf68AzIvL02', 'ADMIN', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_admin_id;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_admin_id, 'ADMIN');
+
+-- ==== GIANG VIEN (40 teachers) ====
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00248', '00248@tvu.edu.vn', '$2b$10$OF1d9wXCTeBdCDbfjB7amewoTrnCNe6IzH.WwKDlT68e.ggDcKVcG', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00248;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00248, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00248, '00248', 'Đương', 'Phạm Minh', 'Phạm Minh Đương', '00248@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00249', '00249@tvu.edu.vn', '$2b$10$7XtJMyQhFyjB8h9tbfFMdOwyrVO5Zi9EW8i0XmvfEC2l7aC2gKfSa', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00249;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00249, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00249, '00249', 'Vi', 'Hà Thị Thúy', 'Hà Thị Thúy Vi', '00249@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00250', '00250@tvu.edu.vn', '$2b$10$GFHfglJOC6yRxDVZnnAEo.lfX8SVfWMg4wARSRxNeycBQepFYWRua', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00250;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00250, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00250, '00250', 'C', 'Võ Thành', 'Võ Thành C', '00250@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Mạng máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00251', '00251@tvu.edu.vn', '$2b$10$jKes8mRYBedatFl0JNWl9uBTswLhLWKGMtctsWqnWBzOQiOKqaleC', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00251;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00251, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00251, '00251', 'Việt', 'Trịnh Quốc', 'Trịnh Quốc Việt', '00251@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Trí tuệ nhân tạo', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00252', '00252@tvu.edu.vn', '$2b$10$1jI4gW/3okgQtdlmCBq9w.02eI7rrZyoU..L0J5FvrLQgrMjS4OSC', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00252;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00252, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00252, '00252', 'Nam', 'Trầm Hoàng', 'Trầm Hoàng Nam', '00252@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00253', '00253@tvu.edu.vn', '$2b$10$l.QryMxWLgp8FQLkz1KvDez7ypIsQfw4qx7TR0q1ntfm7nP3PBQCm', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00253;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00253, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00253, '00253', 'Miền', 'Đoàn Phước', 'Đoàn Phước Miền', '00253@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00254', '00254@tvu.edu.vn', '$2b$10$uxsao1xQWnXR/T2NWpIdW.qmVHuDh62C0bdVVoXbWr.22sI4ZmfVW', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00254;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00254, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00254, '00254', 'Huy', 'Ngô Thanh', 'Ngô Thanh Huy', '00254@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn An toàn thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00255', '00255@tvu.edu.vn', '$2b$10$aZB5qQDb82J8NW6LV5l/zuTYsIpfu6hnEtfRYkXN6i04wqdTyzKe.', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00255;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00255, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00255, '00255', 'Mai', 'Phạm Thị Trúc', 'Phạm Thị Trúc Mai', '00255@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00256', '00256@tvu.edu.vn', '$2b$10$MwOGgnY3PTS3yyolf/G.w.TXg7DvuDpOAA47KLh.QIpmaA7fHLQxm', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00256;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00256, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00256, '00256', 'Lan', 'Lê Thị Thùy', 'Lê Thị Thùy Lan', '00256@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00257', '00257@tvu.edu.vn', '$2b$10$jJlZ1qRtS6XficU0PY667emwJfYMkWSCR7pThP9DzXh9E46IYKebe', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00257;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00257, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00257, '00257', 'Hiền', 'Nguyễn Mộng', 'Nguyễn Mộng Hiền', '00257@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Kỹ thuật máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00258', '00258@tvu.edu.vn', '$2b$10$9byxdSv7YFpeuWr4zIVZ.urmXzVtfdzK3t1H0nQ4v6bLaanLeHI0S', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00258;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00258, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00258, '00258', 'Phúc', 'Nhan Minh', 'Nhan Minh Phúc', '00258@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00259', '00259@tvu.edu.vn', '$2b$10$wbZ6ZLBUBOtEG5AVRMcFmOLj5dcsgHDuI0FUZtRW7subnnIy5BC3O', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00259;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00259, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00259, '00259', 'Duyên', 'Trịnh Thị Anh', 'Trịnh Thị Anh Duyên', '00259@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00260', '00260@tvu.edu.vn', '$2b$10$SoU840sjtv11buOM14oKJeoniHbcSewcDY4T/D8N9lNWO4VkiMeH.', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00260;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00260, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00260, '00260', 'Phúc', 'Đặng Hữu', 'Đặng Hữu Phúc', '00260@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00261', '00261@tvu.edu.vn', '$2b$10$fNgPRuJJ5Eh5heyCqsC0k.Et6GPOcOmx6s6oSwVFVCELlptmx77QK', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00261;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00261, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00261, '00261', 'Toàn', 'Trần Song', 'Trần Song Toàn', '00261@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Trí tuệ nhân tạo', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00262', '00262@tvu.edu.vn', '$2b$10$mH/W2K/jTij3vVTsNPz8jePnasQfj7JZ5kgqtdKbvPSfWeR2qxuU.', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00262;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00262, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00262, '00262', 'Triết', 'Phạm Minh', 'Phạm Minh Triết', '00262@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Mạng máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00264', '00264@tvu.edu.vn', '$2b$10$p6aYtWxFoiRz0OidZtTTHuMM5qtQ0WeGTj5s5Yy3OKrB1kf2qEOde', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00264;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00264, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00264, '00264', 'Tần', 'Nguyễn Thanh', 'Nguyễn Thanh Tần', '00264@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00265', '00265@tvu.edu.vn', '$2b$10$Fzk499ab2TXQFIdgUy1E1.u9VpquPDrxmiUHO/IdS85twoim2p4wW', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00265;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00265, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00265, '00265', 'Sen', 'Trần Thị', 'Trần Thị Sen', '00265@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn An toàn thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00267', '00267@tvu.edu.vn', '$2b$10$HfRYLNrzOQAoCM.GVFK1YOWZujtlWMiwJBnIDEUUm4i/HMQssvfAC', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00267;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00267, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00267, '00267', 'Tuân', 'Phan Văn', 'Phan Văn Tuân', '00267@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00268', '00268@tvu.edu.vn', '$2b$10$Six60YjE90qDUfDjf7OL2uXQsrD2KHE9k0XPczYDKBakFZZ5V1Q3q', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00268;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00268, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00268, '00268', 'Mến', 'Trương Văn', 'Trương Văn Mến', '00268@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00269', '00269@tvu.edu.vn', '$2b$10$60Whs32wdbSdTg6XNlWXU.7VClwdTtZaQUNfZW4Jmvfg63tZJOFFC', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00269;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00269, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00269, '00269', 'Hùng', 'Dương Minh', 'Dương Minh Hùng', '00269@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00696', '00696@tvu.edu.vn', '$2b$10$CXRBIvlYM.2AhWCsQHkvZea1tq/JmoyOBXrTryfvfO0fyojPalIMC', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00696;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00696, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00696, '00696', 'Hải', 'Lê Minh', 'Lê Minh Hải', '00696@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Mạng máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00707', '00707@tvu.edu.vn', '$2b$10$UmnoyEhwLa7WTdSRTzio/eYpMBuukM7zhvBOjfyLx8p8GXk5Umoje', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00707;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00707, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00707, '00707', 'Nhuận', 'Nguyễn Phú', 'Nguyễn Phú Nhuận', '00707@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Trí tuệ nhân tạo', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('00823', '00823@tvu.edu.vn', '$2b$10$SVlGnkxIGmbP5Q79RCCqJ.wMzXndxjmXKDQfvbT90HoLKbDegAiby', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_00823;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_00823, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_00823, '00823', 'Vi', 'Thạch Vũ Đình', 'Thạch Vũ Đình Vi', '00823@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('02405', '02405@tvu.edu.vn', '$2b$10$cU21p3PIGT24kyQ7UJTm1.V2QLMUkYnGaSOob8qkSuq8FTBI4p3eG', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_02405;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_02405, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_02405, '02405', 'Hiền', 'Nguyễn Thanh', 'Nguyễn Thanh Hiền', '02405@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('03539', '03539@tvu.edu.vn', '$2b$10$r.D03WZtxrXt5bydKbbA8Ogl06uzQyVbsghWNp4J4qh1gQTOtqf9O', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_03539;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_03539, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_03539, '03539', 'Tự', 'Lê Minh', 'Lê Minh Tự', '03539@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn An toàn thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('03546', '03546@tvu.edu.vn', '$2b$10$tgenmlOnsjJbmSVAp4aGYO1Sb4rOysuDO8G953PPIkmvReewWk2P.', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_03546;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_03546, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_03546, '03546', 'Nam', 'Phan Thị Phương', 'Phan Thị Phương Nam', '03546@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('03562', '03562@tvu.edu.vn', '$2b$10$8JHYP0cd37b67tgVJ7BGy.SplCN2syb7t7TkqqG/pFIHFYifYN17C', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_03562;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_03562, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_03562, '03562', 'Quốc', 'Nguyễn Khắc', 'Nguyễn Khắc Quốc', '03562@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('06742', '06742@tvu.edu.vn', '$2b$10$LRzqwFGbqnUwVQ7KRUf.beZ86VBjOaO1/XvWepTAx4MbkFBmr6XHe', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_06742;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_06742, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_06742, '06742', 'Hà', 'Ngô Thanh', 'Ngô Thanh Hà', '06742@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Mạng máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('10101', '10101@tvu.edu.vn', '$2b$10$0OGQeNQ7tS4JyCV2Dfwsren/nDJe9Z2/5w0R6.Z/RF7Gg8ZXSdwPa', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_10101;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_10101, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_10101, '10101', 'Hà', 'Hồ Ngọc', 'Hồ Ngọc Hà', '10101@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12661', '12661@tvu.edu.vn', '$2b$10$bq9KVnfwnbvwCcIWvtqPwuGECq2TdKGo1HlYGO1s3v6cHYqcUK/Tm', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12661;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12661, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12661, '12661', 'Hưng', 'Võ Phước', 'Võ Phước Hưng', '12661@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12692', '12692@tvu.edu.vn', '$2b$10$W8SegTjedTpjnOM4MWpIGOF8bVvYnZjq2U1h.ifqQMrO0NElyeS/O', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12692;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12692, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12692, '12692', 'Minh', 'Đặng Hoàng', 'Đặng Hoàng Minh', '12692@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Trí tuệ nhân tạo', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12694', '12694@tvu.edu.vn', '$2b$10$lf5TxuOtCJGy8af9oZF0luahwKn2lOjLbF8bsv8nJUru0ltQymDGK', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12694;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12694, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12694, '12694', 'Tùng', 'Lê Thanh', 'Lê Thanh Tùng', '12694@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12695', '12695@tvu.edu.vn', '$2b$10$z7lTHLN2YHi0WKpB/Zm2huC69d8paYkKJKLtn5LSBmkzKVCz6MPSK', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12695;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12695, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12695, '12695', 'Tiền', 'Nguyễn Ngọc', 'Nguyễn Ngọc Tiền', '12695@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Mạng máy tính', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12696', '12696@tvu.edu.vn', '$2b$10$QOhtlVJZtuWuIO24bo2JPuibZzHsG.Pd8qyx0m7w1sEnjVOaIR5wy', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12696;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12696, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12696, '12696', 'Viasana', 'Thạch Thị', 'Thạch Thị Viasana', '12696@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12700', '12700@tvu.edu.vn', '$2b$10$pgaNnOZs.9t.yeZLTUnlsO9cj1Ws9IX6QdF4XHX79Z1fX3UIQjqNi', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12700;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12700, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12700, '12700', 'Nhựt', 'Khấu Văn', 'Khấu Văn Nhựt', '12700@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12701', '12701@tvu.edu.vn', '$2b$10$/hJ6aYNt1ZoZ2BMbbNyhbO07Ts8KeXwt0CaU2Lb4HxuoPH0UtvS0m', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12701;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12701, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12701, '12701', 'Nam', 'Trần Văn', 'Trần Văn Nam', '12701@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12702', '12702@tvu.edu.vn', '$2b$10$oOwGY.Nnl84KcT5S0Du6ZeYTYwz.j.CvjoimZJyHGtValpf7yFhX6', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12702;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12702, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12702, '12702', 'Tài', 'Nguyễn Thừa Phát', 'Nguyễn Thừa Phát Tài', '12702@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Kỹ thuật phần mềm', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12703', '12703@tvu.edu.vn', '$2b$10$r1oJmLJIDRGvSvE/yJIOxe2Id.myoqXCREjLoJ5pemzgh9lJUjUCq', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12703;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12703, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12703, '12703', 'Vũ', 'Nguyễn Hoàng', 'Nguyễn Hoàng Vũ', '12703@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn Công nghệ thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12704', '12704@tvu.edu.vn', '$2b$10$CbdO/0uXnNG76U96VosFH.aKmFcySQyAwZUeUdvI3nq2RXF7qJaCS', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12704;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12704, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12704, '12704', 'Tuấn', 'Kim Anh', 'Kim Anh Tuấn', '12704@tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Bộ môn An toàn thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('12705', '12705@tvu.edu.vn', '$2b$10$kAlMKA1VunY1e/C.eCf7U.vBYQ0IlvuVW1h8hJer3LZXvLx89dKgy', 'TEACHER', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_t_12705;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_t_12705, 'TEACHER');
+    INSERT INTO giang_vien (nguoi_dung_id, ma_giang_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, khoa, chuyen_mon, ngay_tao, ngay_cap_nhat)
+    VALUES (v_t_12705, '12705', 'Hạnh', 'Nguyễn Trần Diễm', 'Nguyễn Trần Diễm Hạnh', '12705@tvu.edu.vn', 'NU', 'HOAT_DONG', 'Bộ môn Hệ thống thông tin', 'Giảng dạy đại học', NOW(), NOW());
+
+-- ==== LOP HOC (5 lop hoc phan K22) ====
+    SELECT id INTO v_class_oop FROM giang_vien WHERE ma_giang_vien = '00248';
+    SELECT id INTO v_class_dsa FROM giang_vien WHERE ma_giang_vien = '00249';
+    SELECT id INTO v_class_db  FROM giang_vien WHERE ma_giang_vien = '00250';
+    SELECT id INTO v_class_os  FROM giang_vien WHERE ma_giang_vien = '00251';
+    SELECT id INTO v_class_net FROM giang_vien WHERE ma_giang_vien = '00252';
+
+    INSERT INTO lop_hoc (ma_lop, ten_lop, giang_vien_id, nam_hoc, hoc_ky, mon_hoc, phong_hoc, lich_hoc, so_sinh_vien_toi_da, so_sinh_vien_hien_tai, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_cap_nhat)
+    VALUES ('OOP-K22A', 'Lập trình hướng đối tượng', v_class_oop, '2022-2023', 1, 'Lập trình hướng đối tượng', 'A301', 'Thứ 2, 7h00-9h30', 100, 50, '2022-09-01', '2023-01-15', 'DA_HOAN_THANH', NOW(), NOW())
+    RETURNING id INTO v_class_oop;
+    INSERT INTO lop_hoc (ma_lop, ten_lop, giang_vien_id, nam_hoc, hoc_ky, mon_hoc, phong_hoc, lich_hoc, so_sinh_vien_toi_da, so_sinh_vien_hien_tai, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_cap_nhat)
+    VALUES ('DSA-K22A', 'Cấu trúc dữ liệu và giải thuật', v_class_dsa, '2022-2023', 1, 'Cấu trúc dữ liệu và giải thuật', 'A302', 'Thứ 4, 13h30-16h00', 100, 50, '2022-09-01', '2023-01-15', 'DA_HOAN_THANH', NOW(), NOW())
+    RETURNING id INTO v_class_dsa;
+    INSERT INTO lop_hoc (ma_lop, ten_lop, giang_vien_id, nam_hoc, hoc_ky, mon_hoc, phong_hoc, lich_hoc, so_sinh_vien_toi_da, so_sinh_vien_hien_tai, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_cap_nhat)
+    VALUES ('DB-K22A', 'Cơ sở dữ liệu', v_class_db, '2022-2023', 2, 'Cơ sở dữ liệu', 'B201', 'Thứ 6, 7h00-9h30', 100, 50, '2022-09-01', '2023-01-15', 'DA_HOAN_THANH', NOW(), NOW())
+    RETURNING id INTO v_class_db;
+    INSERT INTO lop_hoc (ma_lop, ten_lop, giang_vien_id, nam_hoc, hoc_ky, mon_hoc, phong_hoc, lich_hoc, so_sinh_vien_toi_da, so_sinh_vien_hien_tai, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_cap_nhat)
+    VALUES ('OS-K22A', 'Hệ điều hành', v_class_os, '2022-2023', 2, 'Hệ điều hành', 'B202', 'Thứ 3, 9h45-12h00', 100, 50, '2022-09-01', '2023-01-15', 'DA_HOAN_THANH', NOW(), NOW())
+    RETURNING id INTO v_class_os;
+    INSERT INTO lop_hoc (ma_lop, ten_lop, giang_vien_id, nam_hoc, hoc_ky, mon_hoc, phong_hoc, lich_hoc, so_sinh_vien_toi_da, so_sinh_vien_hien_tai, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_cap_nhat)
+    VALUES ('NET-K22A', 'Mạng máy tính', v_class_net, '2023-2024', 3, 'Mạng máy tính', 'C101', 'Thứ 5, 13h30-16h00', 100, 50, '2022-09-01', '2023-01-15', 'DA_HOAN_THANH', NOW(), NOW())
+    RETURNING id INTO v_class_net;
+
+-- ==== SINH VIEN (50 students) ====
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122001', '110122001@st.tvu.edu.vn', '$2b$10$Vhkg.wgfiY9zkj6rA7TqBecEctoZu7QpTDlCAemurFxt0loNvxOeO', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122001;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122001, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122001, '110122001', 'A', 'Nguyễn Văn', 'Nguyễn Văn A', '110122001@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122001 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122001;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122002', '110122002@st.tvu.edu.vn', '$2b$10$RB.K27kJxy.bgkZ./cI/C.gANt0XFg/nbjLmPhgfwzvYHxCalvMNS', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122002;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122002, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122002, '110122002', 'B', 'Trần Thị', 'Trần Thị B', '110122002@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122002 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122002;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122003', '110122003@st.tvu.edu.vn', '$2b$10$IHBiFdoPavuFwMR36CZjjuhbCEOUA8coOymYfce9vBo6vGEjjT4i.', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122003;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122003, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122003, '110122003', 'C', 'Lê Văn', 'Lê Văn C', '110122003@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122003 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122003;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122004', '110122004@st.tvu.edu.vn', '$2b$10$yfAF7ZjxaornJVmY0goqnO3v3ZAXgOJt7VPZXWKif/xAcq9hHF2T.', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122004;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122004, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122004, '110122004', 'D', 'Phạm Thị', 'Phạm Thị D', '110122004@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122004 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122004;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122005', '110122005@st.tvu.edu.vn', '$2b$10$TwHrglW9zF/OpBNY4K3d1OODcHFAgvE/Wo/QWv82V3vWpTg97dtge', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122005;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122005, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122005, '110122005', 'E', 'Hoàng Văn', 'Hoàng Văn E', '110122005@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122005 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122005;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122249', '110122249@st.tvu.edu.vn', '$2b$10$j.xkQo2GIr.BTrgkvbfUvultDUHden2A4gs./fbvZrhdc9I9PKu1S', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122249;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122249, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122249, '110122249', 'Tú', 'Lâm Tinh', 'Lâm Tinh Tú', '110122249@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122249 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122249;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122248', '110122248@st.tvu.edu.vn', '$2b$10$3TqtqnwfP9GRcv4nC6zHkOjdEsJN7Dv0sf4nlIKcNWYWJDH7XRbWy', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122248;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122248, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122248, '110122248', 'Triệu', 'Nguyễn Thanh', 'Nguyễn Thanh Triệu', '110122248@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122248 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122248;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122246', '110122246@st.tvu.edu.vn', '$2b$10$f7oBF/F6v31fRcCPNqo4T.dnl11epkqXxQn5KrXfWgVu6qlm878Zy', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122246;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122246, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122246, '110122246', 'Thưởng', 'Trần Thanh', 'Trần Thanh Thưởng', '110122246@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122246 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122246;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122243', '110122243@st.tvu.edu.vn', '$2b$10$pOypKQCS0AmvEpIRR3vNCuJwuFCaptZjjHIvnArHMwb.760D.wvJ6', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122243;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122243, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122243, '110122243', 'Tân', 'Phạm Duy', 'Phạm Duy Tân', '110122243@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122243 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122243;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122106', '110122106@st.tvu.edu.vn', '$2b$10$tTCaCCw6vCxVw/L1jvtup.RXLWsYcwkaa13m9m8C9QFd5bmANsUkW', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122106;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122106, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122106, '110122106', 'Lợi', 'Mai Hồng', 'Mai Hồng Lợi', '110122106@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122106 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122106;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122105', '110122105@st.tvu.edu.vn', '$2b$10$YOVW/QTkUw1B7G6flGOKYON0CS/4BnwadmB9dz9L/pZ038lZSBd.G', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122105;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122105, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122105, '110122105', 'Lộc', 'Nguyễn Đỗ Thành', 'Nguyễn Đỗ Thành Lộc', '110122105@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122105 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122105;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122103', '110122103@st.tvu.edu.vn', '$2b$10$XiLTUxF.cIBtUBOG02qWkuH0gpjmBwbPkDk/L37I21Y/HWDAAwWf6', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122103;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122103, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122103, '110122103', 'Lộc', 'Hà Gia', 'Hà Gia Lộc', '110122103@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122103 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122103;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122102', '110122102@st.tvu.edu.vn', '$2b$10$Baxg0SBf.9xRSfGTANis8e4oB7YWB914AT3PchmW4TfSuPneYy3YC', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122102;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122102, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122102, '110122102', 'Lăm', 'Nguyễn Hoàng', 'Nguyễn Hoàng Lăm', '110122102@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122102 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122102;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122076', '110122076@st.tvu.edu.vn', '$2b$10$sUncC0eEKI3g4wesr5MV1OiDCiZkSnums2VUrRuNImStPRM0lWcNi', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122076;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122076, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122076, '110122076', 'Hiếu', 'Phạm Trung', 'Phạm Trung Hiếu', '110122076@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122076 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122076;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122075', '110122075@st.tvu.edu.vn', '$2b$10$jX1dQKSCzL8BNcW73Z.N5uoFsav3Iayrw9nBETJcqMa4UyQDbfeW.', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122075;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122075, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122075, '110122075', 'Hiếu', 'Đặng Minh', 'Đặng Minh Hiếu', '110122075@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122075 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122075;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122074', '110122074@st.tvu.edu.vn', '$2b$10$w09WyUKztqtqFyqkKQB2Ou0kzqryOhh6aI8pXdpVBa9haMcBK/Bsm', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122074;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122074, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122074, '110122074', 'Hiền', 'Đàm Thúy', 'Đàm Thúy Hiền', '110122074@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122074 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122074;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122069', '110122069@st.tvu.edu.vn', '$2b$10$6ZGhIv20X61YhHn8iwgFLepWL87t4phJArNcuJ3P40/4Lup5KYspi', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122069;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122069, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122069, '110122069', 'Hân', 'Nguyễn Thị Ngọc', 'Nguyễn Thị Ngọc Hân', '110122069@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122069 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122069;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122071', '110122071@st.tvu.edu.vn', '$2b$10$HBuO7PYdQNri8pBmm.h35.H8iVkYiCUoGKPDvL7qlI/DERMcatC2u', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122071;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122071, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122071, '110122071', 'Hào', 'Lâm Nhật', 'Lâm Nhật Hào', '110122071@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122071 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122071;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122070', '110122070@st.tvu.edu.vn', '$2b$10$C94Z4zqqxOCUpcijn6is7.bS8QT3XP1N.NTUgS2qSlmDeoo3tmd8K', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122070;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122070, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122070, '110122070', 'Hào', 'Đỗ Gia', 'Đỗ Gia Hào', '110122070@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122070 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122070;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122068', '110122068@st.tvu.edu.vn', '$2b$10$ko1uNUw3eKW0PFz9hvJkFOLsgs5UJvQBZfzEH6FhaR1TlI6hs0KAi', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122068;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122068, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122068, '110122068', 'Hải', 'Võ Chí', 'Võ Chí Hải', '110122068@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122068 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122068;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122066', '110122066@st.tvu.edu.vn', '$2b$10$4kit9pHJJN0v5OQFI3RgT.qkFF8XtraycSlIWMvQWMTpazMqe9.6O', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122066;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122066, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122066, '110122066', 'Giang', 'Trương Hoàng', 'Trương Hoàng Giang', '110122066@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122066 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122066;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122055', '110122055@st.tvu.edu.vn', '$2b$10$uT5/gVH3cQii5WdyMVtF5uprG.8ZaVVr4GhkFwuvxNd179aNWo4Ue', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122055;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122055, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122055, '110122055', 'Đức', 'Trần Minh', 'Trần Minh Đức', '110122055@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122055 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122055;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122054', '110122054@st.tvu.edu.vn', '$2b$10$ItFD094.kE91pudm8Vg0meTu/evjHEu9xeIajS9/WPFZ1n/jwjcKi', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122054;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122054, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122054, '110122054', 'Đức', 'Trần Lâm Phú', 'Trần Lâm Phú Đức', '110122054@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122054 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122054;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122064', '110122064@st.tvu.edu.vn', '$2b$10$ZxRCaFJSv3laofuREqKlxe1DDp9rHEBMP4KiLV8mOTK.LqWxaUiWq', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122064;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122064, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122064, '110122064', 'Duyên', 'Trương Mỹ', 'Trương Mỹ Duyên', '110122064@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122064 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122064;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122062', '110122062@st.tvu.edu.vn', '$2b$10$JLVlxItrgWaFQUjQN8OXn.PgImiwi7iRnKlHnltrHzjFqaatObMPu', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122062;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122062, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122062, '110122062', 'Duy', 'Nguyễn Thanh', 'Nguyễn Thanh Duy', '110122062@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122062 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122062;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122061', '110122061@st.tvu.edu.vn', '$2b$10$d63gMJbFt07sI.mz4B0yVe.gRtd2hvVY4sGjUy3z06nxNuR9Y95yy', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122061;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122061, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122061, '110122061', 'Duy', 'Nguyễn Lê', 'Nguyễn Lê Duy', '110122061@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122061 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122061;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122060', '110122060@st.tvu.edu.vn', '$2b$10$zR6L.ZRzD.TOFh6/SuHSueJGKNmK.VWmbqrMkHPtmU33yx8sWrp36', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122060;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122060, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122060, '110122060', 'Duy', 'Lê Hà', 'Lê Hà Duy', '110122060@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122060 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122060;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122059', '110122059@st.tvu.edu.vn', '$2b$10$jI6Gr6V9GWVoTtph1pFDQOrhGIjXv6WtHLiyQ/0i.h8qJxJLW9PyG', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122059;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122059, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122059, '110122059', 'Duy', 'Huỳnh Khánh', 'Huỳnh Khánh Duy', '110122059@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122059 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122059;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122058', '110122058@st.tvu.edu.vn', '$2b$10$FuciR4.53X.6aGzTuok5UeptSUGY2eMbJjloKJ3oBviDJYSjuk2eq', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122058;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122058, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122058, '110122058', 'Duy', 'Đào Công', 'Đào Công Duy', '110122058@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122058 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122058;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122056', '110122056@st.tvu.edu.vn', '$2b$10$UQy3A5v/1EkktNkwbY369OPU5LNC41WYe4fvjODUZ9OD.D6Dxl1G2', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122056;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122056, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122056, '110122056', 'Dũng', 'Hồ Nguyễn Quốc', 'Hồ Nguyễn Quốc Dũng', '110122056@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122056 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122056;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122028', '110122028@st.tvu.edu.vn', '$2b$10$G6PfSwNhbCVyEYBlgzJWp.qBmwIa86ewjFvD0oN7GylmsKL4wXp2e', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122028;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122028, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122028, '110122028', 'An', 'Liễu Kiện', 'Liễu Kiện An', '110122028@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122028 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122028;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122101', '110122101@st.tvu.edu.vn', '$2b$10$CbwyyUM2fwvBC8ynVCknaeSkYY2nQftI5CnUb2TtqQcNjlCm.6Tcq', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122101;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122101, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122101, '110122101', 'Kiệt', 'Phùng Quốc', 'Phùng Quốc Kiệt', '110122101@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122101 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122101;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122100', '110122100@st.tvu.edu.vn', '$2b$10$mWTcDZDyUXaz.eXLEtihzOd7Sw0hqc8gh/zA6tmNfSREeIElVGsAa', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122100;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122100, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122100, '110122100', 'Kiệt', 'Huỳnh Quốc', 'Huỳnh Quốc Kiệt', '110122100@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122100 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122100;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122099', '110122099@st.tvu.edu.vn', '$2b$10$pyu9.Hy1R7dqyXp2OGwJveZ3qYnsEQlPX40MAoAL8/e9XpMmXWeJm', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122099;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122099, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122099, '110122099', 'Kiệt', 'Hoàng Tuấn', 'Hoàng Tuấn Kiệt', '110122099@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122099 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122099;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122098', '110122098@st.tvu.edu.vn', '$2b$10$PpJnmaePinjfR0PD6gTLvOi/DN0v74aON8h.1.xUJfRBm6poW7en6', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122098;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122098, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122098, '110122098', 'Kiệt', 'Đặng Gia', 'Đặng Gia Kiệt', '110122098@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122098 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122098;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122097', '110122097@st.tvu.edu.vn', '$2b$10$KODH5Rvlw4xrZI29NkxGrOPtvFG1rAK6wRDl65bBY4JDNmAIeexIC', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122097;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122097, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122097, '110122097', 'Khởi', 'Nguyễn Minh', 'Nguyễn Minh Khởi', '110122097@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122097 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122097;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122095', '110122095@st.tvu.edu.vn', '$2b$10$WK6ROPJ9rDcgqqSWnAiLIuoiyuNKKdO7qpftgG9QV9Wp7Tb1VC0pi', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122095;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122095, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122095, '110122095', 'Khoa', 'Nguyễn Ngọc Anh', 'Nguyễn Ngọc Anh Khoa', '110122095@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122095 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122095;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122094', '110122094@st.tvu.edu.vn', '$2b$10$Io38gVNKXDHvEyk0CFrim.u4OwUizZoVvFJ7MmnkBngnk7vfPXzym', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122094;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122094, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122094, '110122094', 'Khoa', 'Nguyễn Đinh Tuấn', 'Nguyễn Đinh Tuấn Khoa', '110122094@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122094 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122094;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122093', '110122093@st.tvu.edu.vn', '$2b$10$gy5FsoJYb6Ab.5fjSP6geuVqoyRtWG2DQMAyQRDEp/Q8snOa.CvgO', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122093;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122093, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122093, '110122093', 'Khoa', 'Hồ Anh', 'Hồ Anh Khoa', '110122093@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122093 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122093;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122092', '110122092@st.tvu.edu.vn', '$2b$10$9o93ZG2DwgLT/s8jr0q5iuU55x7cRb90fg31duCKzo2uokaCVi3pe', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122092;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122092, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122092, '110122092', 'Khang', 'Ngô Huỳnh Quốc', 'Ngô Huỳnh Quốc Khang', '110122092@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122092 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122092;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122090', '110122090@st.tvu.edu.vn', '$2b$10$exoTvin6hhX/Gm.DRNg5EunNQ2OjhuLrbP.W.GReTmKqapyG9Czpy', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122090;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122090, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122090, '110122090', 'Khang', 'La Thuấn', 'La Thuấn Khang', '110122090@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122090 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122090;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122089', '110122089@st.tvu.edu.vn', '$2b$10$8qrDhRdJeu3gU4ExfuNsT.X1UepSHyeyDjOYlYIBBT77/D13eodAu', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122089;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122089, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122089, '110122089', 'Khải', 'Phan Đình', 'Phan Đình Khải', '110122089@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122089 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122089;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122087', '110122087@st.tvu.edu.vn', '$2b$10$ANV3cN7lBe84MzfWRL.GOuPZpRNMCFMbiKdc0eo0cQf32DQfGXoj6', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122087;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122087, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122087, '110122087', 'Khá', 'Trầm Tấn', 'Trầm Tấn Khá', '110122087@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122087 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122087;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122086', '110122086@st.tvu.edu.vn', '$2b$10$pvGZgqZhouaLwiMtO1GQk.81vFZ1gWMmqB6enQJPcvtyiv71LArqW', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122086;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122086, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122086, '110122086', 'Kha', 'Lê Tuấn', 'Lê Tuấn Kha', '110122086@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122086 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122086;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122083', '110122083@st.tvu.edu.vn', '$2b$10$ZBPetXFZ1XZwphQ5FLAWLOj.uzLz3pV1LmYiH/3.ywcdSpQTYSLO6', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122083;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122083, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122083, '110122083', 'Hương', 'Đỗ Thị Kim', 'Đỗ Thị Kim Hương', '110122083@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122083 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122083;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122082', '110122082@st.tvu.edu.vn', '$2b$10$izjzf3w9NXziTteiTAdobuzHlYE2QIA0aV3H.18m/CqmbQuxYa0lW', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122082;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122082, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122082, '110122082', 'Hương', 'Châu Thị Mỹ', 'Châu Thị Mỹ Hương', '110122082@st.tvu.edu.vn', 'NU', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122082 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122082;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122081', '110122081@st.tvu.edu.vn', '$2b$10$9I0uRkeShOTGUTRqCkZYmOCPq92TiwA.k5gSU.GpFAHUpAJFN8kBm', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122081;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122081, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122081, '110122081', 'Hưng', 'Trần Tấn', 'Trần Tấn Hưng', '110122081@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122081 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122081;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122079', '110122079@st.tvu.edu.vn', '$2b$10$NH3BvwjloNLm3UHufWat7e8F5K4/ZGH5rtPRq84.nlvM4EOJ44eWa', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122079;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122079, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122079, '110122079', 'Hùng', 'Nguyễn Phi', 'Nguyễn Phi Hùng', '110122079@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122079 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122079;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122078', '110122078@st.tvu.edu.vn', '$2b$10$T.OMcczUTMfF29oLagW12.fDA7glM6BUGZpZ.lKtY/AKrvCHbJ2ZC', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122078;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122078, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122078, '110122078', 'Hoàng', 'Nguyễn Văn', 'Nguyễn Văn Hoàng', '110122078@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122078 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122078;
+
+    INSERT INTO nguoi_dung (ten_dang_nhap, email, mat_khau_ma_hoa, vai_tro, bi_khoa, kich_hoat, so_lan_dang_nhap_that_bai, ngay_tao, ngay_cap_nhat)
+    VALUES ('110122077', '110122077@st.tvu.edu.vn', '$2b$10$2XgjN3vBFDfV08aVM3EdHOl.v2i4Kf.tlzQKmFAU4hUcu3l/uEgTO', 'STUDENT', false, true, 0, NOW(), NOW())
+    RETURNING id INTO v_s_110122077;
+    INSERT INTO vai_tro_nguoi_dung (nguoi_dung_id, vai_tro) VALUES (v_s_110122077, 'STUDENT');
+    INSERT INTO sinh_vien (nguoi_dung_id, ma_sinh_vien, ten, ho, ho_ten, email, gioi_tinh, trang_thai, chuyen_nganh, nam_hoc, ngay_nhap_hoc, ngay_tao, ngay_cap_nhat)
+    VALUES (v_s_110122077, '110122077', 'Hoàn', 'Huỳnh Minh Khải', 'Huỳnh Minh Khải Hoàn', '110122077@st.tvu.edu.vn', 'NAM', 'HOAT_DONG', 'Công nghệ thông tin', '2022-2026', '2022-09-01', NOW(), NOW())
+    SELECT id INTO v_s_110122077 FROM sinh_vien WHERE nguoi_dung_id = v_s_110122077;
+
+-- ==== DANG KY LOP HOC (enrollments) ====
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122001, NOW(), 'DA_HOAN_THANH', 'D+', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122001, NOW(), 'DA_HOAN_THANH', 'A', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122001, NOW(), 'DA_HOAN_THANH', 'B', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122001, NOW(), 'DA_HOAN_THANH', 'B+', 79.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122001, NOW(), 'DA_HOAN_THANH', 'D+', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122002, NOW(), 'DA_HOAN_THANH', 'D+', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122002, NOW(), 'DA_HOAN_THANH', 'C', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122002, NOW(), 'DA_HOAN_THANH', 'C', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122002, NOW(), 'DA_HOAN_THANH', 'A', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122002, NOW(), 'DA_HOAN_THANH', 'A', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122003, NOW(), 'DA_HOAN_THANH', 'B+', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122003, NOW(), 'DA_HOAN_THANH', 'C', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122003, NOW(), 'DA_HOAN_THANH', 'C', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122003, NOW(), 'DA_HOAN_THANH', 'D+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122003, NOW(), 'DA_HOAN_THANH', 'D+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122004, NOW(), 'DA_HOAN_THANH', 'C+', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122004, NOW(), 'DA_HOAN_THANH', 'C+', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122004, NOW(), 'DA_HOAN_THANH', 'B', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122004, NOW(), 'DA_HOAN_THANH', 'A', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122004, NOW(), 'DA_HOAN_THANH', 'B+', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122005, NOW(), 'DA_HOAN_THANH', 'C+', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122005, NOW(), 'DA_HOAN_THANH', 'B', 79.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122005, NOW(), 'DA_HOAN_THANH', 'B+', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122005, NOW(), 'DA_HOAN_THANH', 'B', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122005, NOW(), 'DA_HOAN_THANH', 'A', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122249, NOW(), 'DA_HOAN_THANH', 'A', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122249, NOW(), 'DA_HOAN_THANH', 'B', 94.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122249, NOW(), 'DA_HOAN_THANH', 'B', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122249, NOW(), 'DA_HOAN_THANH', 'A', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122249, NOW(), 'DA_HOAN_THANH', 'C+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122248, NOW(), 'DA_HOAN_THANH', 'A', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122248, NOW(), 'DA_HOAN_THANH', 'A', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122248, NOW(), 'DA_HOAN_THANH', 'B', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122248, NOW(), 'DA_HOAN_THANH', 'C', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122248, NOW(), 'DA_HOAN_THANH', 'C', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122246, NOW(), 'DA_HOAN_THANH', 'D+', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122246, NOW(), 'DA_HOAN_THANH', 'A', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122246, NOW(), 'DA_HOAN_THANH', 'B+', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122246, NOW(), 'DA_HOAN_THANH', 'B', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122246, NOW(), 'DA_HOAN_THANH', 'B+', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122243, NOW(), 'DA_HOAN_THANH', 'C+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122243, NOW(), 'DA_HOAN_THANH', 'C+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122243, NOW(), 'DA_HOAN_THANH', 'B', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122243, NOW(), 'DA_HOAN_THANH', 'B', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122243, NOW(), 'DA_HOAN_THANH', 'B+', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122106, NOW(), 'DA_HOAN_THANH', 'B', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122106, NOW(), 'DA_HOAN_THANH', 'D+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122106, NOW(), 'DA_HOAN_THANH', 'A', 94.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122106, NOW(), 'DA_HOAN_THANH', 'D+', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122106, NOW(), 'DA_HOAN_THANH', 'C', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122105, NOW(), 'DA_HOAN_THANH', 'B+', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122105, NOW(), 'DA_HOAN_THANH', 'C+', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122105, NOW(), 'DA_HOAN_THANH', 'B', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122105, NOW(), 'DA_HOAN_THANH', 'D+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122105, NOW(), 'DA_HOAN_THANH', 'B+', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122103, NOW(), 'DA_HOAN_THANH', 'B', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122103, NOW(), 'DA_HOAN_THANH', 'A', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122103, NOW(), 'DA_HOAN_THANH', 'A', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122103, NOW(), 'DA_HOAN_THANH', 'B', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122103, NOW(), 'DA_HOAN_THANH', 'B', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122102, NOW(), 'DA_HOAN_THANH', 'B+', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122102, NOW(), 'DA_HOAN_THANH', 'D+', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122102, NOW(), 'DA_HOAN_THANH', 'B+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122102, NOW(), 'DA_HOAN_THANH', 'C+', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122102, NOW(), 'DA_HOAN_THANH', 'D+', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122076, NOW(), 'DA_HOAN_THANH', 'B+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122076, NOW(), 'DA_HOAN_THANH', 'B+', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122076, NOW(), 'DA_HOAN_THANH', 'D+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122076, NOW(), 'DA_HOAN_THANH', 'C', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122076, NOW(), 'DA_HOAN_THANH', 'D+', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122075, NOW(), 'DA_HOAN_THANH', 'C+', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122075, NOW(), 'DA_HOAN_THANH', 'C+', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122075, NOW(), 'DA_HOAN_THANH', 'B+', 79.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122075, NOW(), 'DA_HOAN_THANH', 'C', 90.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122075, NOW(), 'DA_HOAN_THANH', 'A', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122074, NOW(), 'DA_HOAN_THANH', 'A', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122074, NOW(), 'DA_HOAN_THANH', 'B+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122074, NOW(), 'DA_HOAN_THANH', 'B+', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122074, NOW(), 'DA_HOAN_THANH', 'D+', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122074, NOW(), 'DA_HOAN_THANH', 'C', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122069, NOW(), 'DA_HOAN_THANH', 'C+', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122069, NOW(), 'DA_HOAN_THANH', 'C', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122069, NOW(), 'DA_HOAN_THANH', 'C', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122069, NOW(), 'DA_HOAN_THANH', 'C', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122069, NOW(), 'DA_HOAN_THANH', 'D+', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122071, NOW(), 'DA_HOAN_THANH', 'A', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122071, NOW(), 'DA_HOAN_THANH', 'C', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122071, NOW(), 'DA_HOAN_THANH', 'B', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122071, NOW(), 'DA_HOAN_THANH', 'D+', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122071, NOW(), 'DA_HOAN_THANH', 'A', 84.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122070, NOW(), 'DA_HOAN_THANH', 'C+', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122070, NOW(), 'DA_HOAN_THANH', 'C+', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122070, NOW(), 'DA_HOAN_THANH', 'D+', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122070, NOW(), 'DA_HOAN_THANH', 'B', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122070, NOW(), 'DA_HOAN_THANH', 'B+', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122068, NOW(), 'DA_HOAN_THANH', 'A', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122068, NOW(), 'DA_HOAN_THANH', 'B', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122068, NOW(), 'DA_HOAN_THANH', 'C', 94.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122068, NOW(), 'DA_HOAN_THANH', 'B+', 79.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122068, NOW(), 'DA_HOAN_THANH', 'B', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122066, NOW(), 'DA_HOAN_THANH', 'B+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122066, NOW(), 'DA_HOAN_THANH', 'C', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122066, NOW(), 'DA_HOAN_THANH', 'C', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122066, NOW(), 'DA_HOAN_THANH', 'C+', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122066, NOW(), 'DA_HOAN_THANH', 'A', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122055, NOW(), 'DA_HOAN_THANH', 'B', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122055, NOW(), 'DA_HOAN_THANH', 'A', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122055, NOW(), 'DA_HOAN_THANH', 'C', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122055, NOW(), 'DA_HOAN_THANH', 'A', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122055, NOW(), 'DA_HOAN_THANH', 'C+', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122054, NOW(), 'DA_HOAN_THANH', 'C', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122054, NOW(), 'DA_HOAN_THANH', 'B+', 79.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122054, NOW(), 'DA_HOAN_THANH', 'D+', 90.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122054, NOW(), 'DA_HOAN_THANH', 'C', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122054, NOW(), 'DA_HOAN_THANH', 'B', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122064, NOW(), 'DA_HOAN_THANH', 'C', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122064, NOW(), 'DA_HOAN_THANH', 'B+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122064, NOW(), 'DA_HOAN_THANH', 'D+', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122064, NOW(), 'DA_HOAN_THANH', 'B+', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122064, NOW(), 'DA_HOAN_THANH', 'B', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122062, NOW(), 'DA_HOAN_THANH', 'D+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122062, NOW(), 'DA_HOAN_THANH', 'B', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122062, NOW(), 'DA_HOAN_THANH', 'C', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122062, NOW(), 'DA_HOAN_THANH', 'A', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122062, NOW(), 'DA_HOAN_THANH', 'B+', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122061, NOW(), 'DA_HOAN_THANH', 'B', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122061, NOW(), 'DA_HOAN_THANH', 'C', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122061, NOW(), 'DA_HOAN_THANH', 'B+', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122061, NOW(), 'DA_HOAN_THANH', 'B+', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122061, NOW(), 'DA_HOAN_THANH', 'A', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122060, NOW(), 'DA_HOAN_THANH', 'D+', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122060, NOW(), 'DA_HOAN_THANH', 'B+', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122060, NOW(), 'DA_HOAN_THANH', 'A', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122060, NOW(), 'DA_HOAN_THANH', 'A', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122060, NOW(), 'DA_HOAN_THANH', 'B+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122059, NOW(), 'DA_HOAN_THANH', 'D+', 90.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122059, NOW(), 'DA_HOAN_THANH', 'B+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122059, NOW(), 'DA_HOAN_THANH', 'B+', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122059, NOW(), 'DA_HOAN_THANH', 'C', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122059, NOW(), 'DA_HOAN_THANH', 'C+', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122058, NOW(), 'DA_HOAN_THANH', 'C+', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122058, NOW(), 'DA_HOAN_THANH', 'C+', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122058, NOW(), 'DA_HOAN_THANH', 'A', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122058, NOW(), 'DA_HOAN_THANH', 'D+', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122058, NOW(), 'DA_HOAN_THANH', 'B', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122056, NOW(), 'DA_HOAN_THANH', 'C+', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122056, NOW(), 'DA_HOAN_THANH', 'D+', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122056, NOW(), 'DA_HOAN_THANH', 'D+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122056, NOW(), 'DA_HOAN_THANH', 'D+', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122056, NOW(), 'DA_HOAN_THANH', 'A', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122028, NOW(), 'DA_HOAN_THANH', 'D+', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122028, NOW(), 'DA_HOAN_THANH', 'A', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122028, NOW(), 'DA_HOAN_THANH', 'B+', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122028, NOW(), 'DA_HOAN_THANH', 'C', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122028, NOW(), 'DA_HOAN_THANH', 'B+', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122101, NOW(), 'DA_HOAN_THANH', 'B+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122101, NOW(), 'DA_HOAN_THANH', 'C+', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122101, NOW(), 'DA_HOAN_THANH', 'A', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122101, NOW(), 'DA_HOAN_THANH', 'C', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122101, NOW(), 'DA_HOAN_THANH', 'A', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122100, NOW(), 'DA_HOAN_THANH', 'C', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122100, NOW(), 'DA_HOAN_THANH', 'A', 99.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122100, NOW(), 'DA_HOAN_THANH', 'B+', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122100, NOW(), 'DA_HOAN_THANH', 'C+', 90.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122100, NOW(), 'DA_HOAN_THANH', 'C+', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122099, NOW(), 'DA_HOAN_THANH', 'C+', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122099, NOW(), 'DA_HOAN_THANH', 'B+', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122099, NOW(), 'DA_HOAN_THANH', 'A', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122099, NOW(), 'DA_HOAN_THANH', 'B', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122099, NOW(), 'DA_HOAN_THANH', 'C+', 84.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122098, NOW(), 'DA_HOAN_THANH', 'C+', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122098, NOW(), 'DA_HOAN_THANH', 'D+', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122098, NOW(), 'DA_HOAN_THANH', 'C', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122098, NOW(), 'DA_HOAN_THANH', 'D+', 90.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122098, NOW(), 'DA_HOAN_THANH', 'B+', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122097, NOW(), 'DA_HOAN_THANH', 'B', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122097, NOW(), 'DA_HOAN_THANH', 'A', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122097, NOW(), 'DA_HOAN_THANH', 'D+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122097, NOW(), 'DA_HOAN_THANH', 'A', 98.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122097, NOW(), 'DA_HOAN_THANH', 'B', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122095, NOW(), 'DA_HOAN_THANH', 'A', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122095, NOW(), 'DA_HOAN_THANH', 'C+', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122095, NOW(), 'DA_HOAN_THANH', 'C', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122095, NOW(), 'DA_HOAN_THANH', 'A', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122095, NOW(), 'DA_HOAN_THANH', 'A', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122094, NOW(), 'DA_HOAN_THANH', 'A', 94.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122094, NOW(), 'DA_HOAN_THANH', 'A', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122094, NOW(), 'DA_HOAN_THANH', 'B+', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122094, NOW(), 'DA_HOAN_THANH', 'A', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122094, NOW(), 'DA_HOAN_THANH', 'B+', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122093, NOW(), 'DA_HOAN_THANH', 'C', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122093, NOW(), 'DA_HOAN_THANH', 'C', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122093, NOW(), 'DA_HOAN_THANH', 'C+', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122093, NOW(), 'DA_HOAN_THANH', 'C', 93.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122093, NOW(), 'DA_HOAN_THANH', 'C', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122092, NOW(), 'DA_HOAN_THANH', 'B', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122092, NOW(), 'DA_HOAN_THANH', 'D+', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122092, NOW(), 'DA_HOAN_THANH', 'B', 82.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122092, NOW(), 'DA_HOAN_THANH', 'B', 87.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122092, NOW(), 'DA_HOAN_THANH', 'B+', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122090, NOW(), 'DA_HOAN_THANH', 'D+', 84.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122090, NOW(), 'DA_HOAN_THANH', 'C+', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122090, NOW(), 'DA_HOAN_THANH', 'A', 75.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122090, NOW(), 'DA_HOAN_THANH', 'C+', 94.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122090, NOW(), 'DA_HOAN_THANH', 'C', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122089, NOW(), 'DA_HOAN_THANH', 'A', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122089, NOW(), 'DA_HOAN_THANH', 'B+', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122089, NOW(), 'DA_HOAN_THANH', 'B', 79.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122089, NOW(), 'DA_HOAN_THANH', 'B', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122089, NOW(), 'DA_HOAN_THANH', 'B+', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122087, NOW(), 'DA_HOAN_THANH', 'B', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122087, NOW(), 'DA_HOAN_THANH', 'C+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122087, NOW(), 'DA_HOAN_THANH', 'D+', 84.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122087, NOW(), 'DA_HOAN_THANH', 'C', 100.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122087, NOW(), 'DA_HOAN_THANH', 'D+', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122086, NOW(), 'DA_HOAN_THANH', 'A', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122086, NOW(), 'DA_HOAN_THANH', 'C', 84.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122086, NOW(), 'DA_HOAN_THANH', 'D+', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122086, NOW(), 'DA_HOAN_THANH', 'B+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122086, NOW(), 'DA_HOAN_THANH', 'A', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122083, NOW(), 'DA_HOAN_THANH', 'D+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122083, NOW(), 'DA_HOAN_THANH', 'B+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122083, NOW(), 'DA_HOAN_THANH', 'B', 94.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122083, NOW(), 'DA_HOAN_THANH', 'B+', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122083, NOW(), 'DA_HOAN_THANH', 'B', 81.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122082, NOW(), 'DA_HOAN_THANH', 'D+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122082, NOW(), 'DA_HOAN_THANH', 'B', 91.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122082, NOW(), 'DA_HOAN_THANH', 'C+', 83.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122082, NOW(), 'DA_HOAN_THANH', 'A', 77.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122082, NOW(), 'DA_HOAN_THANH', 'D+', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122081, NOW(), 'DA_HOAN_THANH', 'B', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122081, NOW(), 'DA_HOAN_THANH', 'A', 85.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122081, NOW(), 'DA_HOAN_THANH', 'B+', 95.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122081, NOW(), 'DA_HOAN_THANH', 'B', 80.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122081, NOW(), 'DA_HOAN_THANH', 'D+', 89.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122079, NOW(), 'DA_HOAN_THANH', 'C', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122079, NOW(), 'DA_HOAN_THANH', 'C+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122079, NOW(), 'DA_HOAN_THANH', 'A', 78.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122079, NOW(), 'DA_HOAN_THANH', 'A', 97.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122079, NOW(), 'DA_HOAN_THANH', 'B+', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122078, NOW(), 'DA_HOAN_THANH', 'A', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122078, NOW(), 'DA_HOAN_THANH', 'C', 92.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122078, NOW(), 'DA_HOAN_THANH', 'B+', 88.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122078, NOW(), 'DA_HOAN_THANH', 'B+', 76.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122078, NOW(), 'DA_HOAN_THANH', 'B', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_oop, v_s_110122077, NOW(), 'DA_HOAN_THANH', 'A', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_dsa, v_s_110122077, NOW(), 'DA_HOAN_THANH', 'B+', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_db, v_s_110122077, NOW(), 'DA_HOAN_THANH', 'B+', 96.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_os, v_s_110122077, NOW(), 'DA_HOAN_THANH', 'A', 86.0, 'Học phần tích lũy');
+    INSERT INTO dang_ky_lop_hoc (lop_hoc_id, sinh_vien_id, ngay_dang_ky, trang_thai, diem, ty_le_diem_danh, ghi_chu)
+    VALUES (v_class_net, v_s_110122077, NOW(), 'DA_HOAN_THANH', 'C', 88.0, 'Học phần tích lũy');
+
+END $$;

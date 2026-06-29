@@ -1,0 +1,265 @@
+{
+  "info": {
+    "name": "Student Management API",
+    "description": "API cho hệ thống quản lý sinh viên - Đã cập nhật bảo mật tiếng Việt",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "1. Register - Đăng ký",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@gmail.com\",\n  \"password\": \"Test@123456\",\n  \"role\": \"STUDENT\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Đăng ký tài khoản mới\n\nYêu cầu:\n- username: 3-50 ký tự\n- email: định dạng email hợp lệ\n- password: 8+ ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt\n- role: STUDENT, TEACHER, hoặc ADMIN"
+          }
+        },
+        {
+          "name": "2. Login - Đăng nhập ĐÚNG",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrEmail\": \"hieupham\",\n  \"password\": \"Hieu@123456\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Đăng nhập với mật khẩu ĐÚNG\n\nKết quả: HTTP 200 + access token"
+          }
+        },
+        {
+          "name": "3. Login - Đăng nhập SAI (Test thông báo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrEmail\": \"hieupham\",\n  \"password\": \"SaiMatKhau123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Test đăng nhập với mật khẩu SAI\n\nKết quả mong đợi:\n- HTTP 401 Unauthorized\n- Message: \"Tên đăng nhập hoặc mật khẩu không đúng (1/5)\"\n\nGọi 5 lần để test khóa tài khoản!"
+          }
+        },
+        {
+          "name": "4. Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"YOUR_REFRESH_TOKEN_HERE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/refresh",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Làm mới access token\n\nThay YOUR_REFRESH_TOKEN_HERE bằng refresh token từ response login"
+          }
+        },
+        {
+          "name": "5. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer YOUR_ACCESS_TOKEN_HERE"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"YOUR_REFRESH_TOKEN_HERE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/logout",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Đăng xuất và thu hồi refresh token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Quản lý IP",
+      "item": [
+        {
+          "name": "1. Xem danh sách IP bị chặn",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/blocked-ips",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "blocked-ips"]
+            },
+            "description": "Lấy danh sách tất cả IP đang bị chặn\n\nChỉ Admin mới có quyền truy cập"
+          }
+        },
+        {
+          "name": "2. Xem thông tin IP cụ thể",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/blocked-ips/192.168.1.100",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "blocked-ips", "192.168.1.100"]
+            },
+            "description": "Xem thông tin chi tiết của một IP bị chặn\n\nThay 192.168.1.100 bằng IP cần kiểm tra"
+          }
+        },
+        {
+          "name": "3. Mở khóa IP (Admin only)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/blocked-ips/192.168.1.100",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "blocked-ips", "192.168.1.100"]
+            },
+            "description": "Mở khóa IP bị chặn vĩnh viễn\n\nChỉ Admin có quyền này!\n\nThay 192.168.1.100 bằng IP cần mở khóa"
+          }
+        },
+        {
+          "name": "4. Chặn IP thủ công",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/blocked-ips?ip=192.168.1.100&reason=Spam",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "blocked-ips"],
+              "query": [
+                {
+                  "key": "ip",
+                  "value": "192.168.1.100",
+                  "description": "IP cần chặn"
+                },
+                {
+                  "key": "reason",
+                  "value": "Spam",
+                  "description": "Lý do chặn"
+                }
+              ]
+            },
+            "description": "Admin chặn IP thủ công\n\nThay đổi ip và reason theo nhu cầu"
+          }
+        },
+        {
+          "name": "5. Xóa tất cả IP bị chặn (Cẩn thận!)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/blocked-ips",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "blocked-ips"]
+            },
+            "description": "⚠️ CẨN THẬN! Xóa TẤT CẢ IP bị chặn\n\nChỉ dùng khi cần thiết!"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["actuator", "health"]
+            },
+            "description": "Kiểm tra trạng thái service\n\nKết quả mong đợi: {\"status\": \"UP\"}"
+          }
+        },
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/swagger-ui/index.html",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["swagger-ui", "index.html"]
+            },
+            "description": "Mở Swagger UI trong trình duyệt\n\nXem tất cả API endpoints với giao diện đẹp"
+          }
+        }
+      ]
+    }
+  ]
+}

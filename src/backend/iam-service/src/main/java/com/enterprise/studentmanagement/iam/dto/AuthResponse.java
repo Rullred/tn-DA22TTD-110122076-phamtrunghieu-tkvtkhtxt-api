@@ -1,0 +1,26 @@
+package com.enterprise.studentmanagement.iam.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * Authentication Response DTO
+ * Response body for login and token refresh
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AuthResponse {
+
+    private String accessToken;
+    private String refreshToken;
+    
+    @Builder.Default
+    private String tokenType = "Bearer";
+    
+    private Long expiresIn; // seconds
+    private UserDto user;
+}
