@@ -78,11 +78,8 @@ export function Teachers() {
         setClasses(classesPage.content || []);
       } catch (err) {
         console.error("Error loading teachers", err);
-        toast.error("Không thể kết nối đến backend. Đang sử dụng dữ liệu mô phỏng.");
-        // Fallback mock
-        setTeachers([
-          { id: '1', teacherCode: 'GV001', firstName: 'Nguyễn Văn', lastName: 'A', email: 'nva@tvu.edu.vn', phoneNumber: '0901234567', dateOfBirth: '1980-01-01', gender: 'MALE', address: 'Trà Vinh', avatarUrl: null, department: 'Công nghệ thông tin', specialization: 'Kỹ thuật phần mềm', status: 'ACTIVE', hireDate: '2010-09-01' }
-        ]);
+        toast.error("Không thể tải danh sách giảng viên từ máy chủ.");
+        setTeachers([]);
         setTotalPages(1);
       } finally {
         setLoading(false);
@@ -922,13 +919,12 @@ export function Teachers() {
                   type="button"
                   onClick={async () => {
                     if (!editingTeacher) return;
-                    if (window.confirm(`Đặt lại mật khẩu cho giảng viên ${editingTeacher.teacherCode}?\n\nMật khẩu mới sẽ là: Password@123`)) {
+                    if (window.confirm(`Đặt lại mật khẩu cho giảng viên ${editingTeacher.teacherCode} về mặc định?`)) {
                       try {
-                        // Call password reset API if available
-                        // await authService.resetPassword(editingTeacher.userId, 'Password@123');
-                        toast.success(`Đặt lại mật khẩu mặc định thành công!\nMật khẩu mới: Password@123`);
-                      } catch (err) {
-                        toast.error("Không thể đặt lại mật khẩu. Vui lòng thử lại.");
+                        const pw = await authService.resetPassword(editingTeacher.email);
+                        toast.success(`Đã đặt lại mật khẩu về: ${pw}`);
+                      } catch (err: any) {
+                        toast.error(err.response?.data?.message || "Không thể đặt lại mật khẩu. Vui lòng thử lại.");
                       }
                     }
                   }}

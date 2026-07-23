@@ -29,12 +29,20 @@ spring:
   flyway:
     enabled: false
 
+  # Redis Configuration (dùng chung với iam-service cho Notification Center)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+
   # File Upload Configuration
   servlet:
     multipart:
       enabled: true
-      max-file-size: 5MB
-      max-request-size: 5MB
+      max-file-size: 25MB
+      max-request-size: 30MB
 
 # Eureka Client Configuration
 eureka:
@@ -75,7 +83,8 @@ management:
 file:
   upload:
     directory: ${FILE_UPLOAD_DIR:uploads}
-    max-size: 5242880 # 5MB
+    max-size: 5242880 # 5MB (avatar)
+    doc-max-size: 26214400 # 25MB (tài liệu học tập / bài nộp)
 
 # Security configuration
 encryption:

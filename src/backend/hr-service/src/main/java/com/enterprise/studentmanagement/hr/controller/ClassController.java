@@ -255,6 +255,21 @@ public class ClassController {
     }
 
     /**
+     * Chốt học kỳ cho một lớp học phần.
+     * POST /api/classes/{classId}/finalize
+     * SV đã đăng ký nhưng chưa được chấm sẽ bị điểm F.
+     */
+    @PostMapping("/{classId}/finalize")
+    public ResponseEntity<ApiResponse<Integer>> finalizeClass(@PathVariable UUID classId) {
+        log.info("POST /api/classes/{}/finalize", classId);
+
+        int failed = classService.finalizeClass(classId);
+
+        return ResponseEntity.ok(ApiResponse.success(
+                failed, "Đã chốt học kỳ. " + failed + " sinh viên chưa chấm bị điểm F."));
+    }
+
+    /**
      * Get enrollments for a student
      * GET /api/classes/students/{studentId}/enrollments
      */

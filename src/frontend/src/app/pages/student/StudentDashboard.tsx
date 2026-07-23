@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { studentService, StudentDto } from '../../../services/studentService';
 import { classService, ClassDto, EnrollmentDto } from '../../../services/classService';
 import { teacherService, TeacherDto } from '../../../services/teacherService';
+import { quizService, StudentQuizDto } from '../../../services/quizService';
+import { learningService } from '../../../services/learningService';
 import {
   Mail, Phone, MapPin, Calendar, Award, TrendingUp, RefreshCw,
   BookOpen, ShieldAlert, Star, Target, Check, Trash2, CalendarDays,
-  BarChart3, Compass, CheckCircle2, AlertCircle, User
+  BarChart3, Compass, CheckCircle2, AlertCircle, User, FileQuestion, Play, GraduationCap
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -115,12 +118,15 @@ interface ScheduleSlot {
 
 export function StudentDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<StudentDto | null>(null);
   const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
   const [classesDetail, setClassesDetail] = useState<Record<string, ClassDto>>({});
   const [advisor, setAdvisor] = useState<TeacherDto | null>(null);
-  const [activeTab, setActiveTab] = useState<'stats' | 'schedule' | 'curriculum' | 'registration' | 'transcript'>('stats');
+  const [quizzes, setQuizzes] = useState<StudentQuizDto[]>([]);
+  const [courseProgress, setCourseProgress] = useState<Record<string, number>>({});
+  const [activeTab, setActiveTab] = useState<'stats' | 'schedule' | 'curriculum' | 'registration' | 'transcript' | 'quiz' | 'courses'>('stats');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Registration states
@@ -331,6 +337,27 @@ export function StudentDashboard() {
   const activeMonday = getMonday(selectedDate);
   const weekDays = getWeekDays(activeMonday);
 
+  // Tải danh sách bài trắc nghiệm khi mở tab (hoặc quay lại sau khi làm bài).
+  useEffect(() => {
+    if (student?.id && activeTab === 'quiz') {
+      quizService.getStudentQuizzes(student.id).then(setQuizzes).catch(() => setQuizzes([]));
+    }
+  }, [student?.id, activeTab, refreshTrigger]);
+
+  // Tải tiến độ % của từng khóa học khi mở tab "Khóa học của tôi".
+  useEffect(() => {
+    if (student?.id && activeTab === 'courses' && enrollments.length > 0) {
+      const sid = student.id;
+      (async () => {
+        const entries = await Promise.all(enrollments.map(async (en) => {
+          const p = await learningService.getProgress(sid, en.classId).catch(() => null);
+          return [en.classId, p?.percent ?? 0] as [string, number];
+        }));
+        setCourseProgress(Object.fromEntries(entries));
+      })();
+    }
+  }, [student?.id, activeTab, enrollments, refreshTrigger]);
+
   useEffect(() => {
     if (!user) return;
     async function loadStudentDashboard() {
@@ -379,11 +406,15 @@ export function StudentDashboard() {
             }
           }
 
-          // Fetch available classes for registration
+          // Fetch available classes for registration.
+          // KHÔNG lọc theo học kỳ/năm ở backend — lấy TẤT CẢ lớp đang mở, rồi lọc theo
+          // thời gian học của khóa ở phía client (SV thấy lớp mọi học kỳ trong khóa mình).
           const availablePage = await classService.getAvailableClasses(
             currentStudent.id,
-            selectedAcademicYear,
-            selectedSemester
+            undefined,
+            undefined,
+            0,
+            500
           );
           setAvailableClasses(availablePage.content || []);
         } else {
@@ -397,15 +428,17 @@ export function StudentDashboard() {
       }
     }
     loadStudentDashboard();
-  }, [user, refreshTrigger, selectedAcademicYear, selectedSemester]);
+  }, [user, refreshTrigger]);
 
   // Handle class registration
-  const handleRegister = async (classId: string) => {
+  const handleRegister = async (classId: string, regType?: string, subjectName?: string) => {
     if (!student) return;
+    if (regType === 'HOC_LAI' && !window.confirm(`Đăng ký HỌC LẠI môn "${subjectName || ''}"? (Bạn đã rớt môn này trước đó)`)) return;
+    if (regType === 'CAI_THIEN' && !window.confirm(`Đăng ký HỌC CẢI THIỆN môn "${subjectName || ''}"? (Bạn đã đạt môn này, đăng ký để cải thiện điểm)`)) return;
     setIsRegistering(true);
     try {
       await classService.enrollStudent(classId, student.id);
-      toast.success("Đăng ký môn học thành công!");
+      toast.success(regType === 'HOC_LAI' ? "Đã đăng ký học lại!" : regType === 'CAI_THIEN' ? "Đã đăng ký học cải thiện!" : "Đăng ký môn học thành công!");
       setRefreshTrigger(prev => prev + 1);
     } catch (err: any) {
       console.error(err);
@@ -447,22 +480,29 @@ export function StudentDashboard() {
     }
   };
 
+  // Các môn đang đăng ký (chưa bỏ học) — dùng cho bảng "Danh sách môn học đã đăng ký"
+  const activeEnrollments = enrollments.filter(e => e.status === 'DA_DANG_KY');
+
+  // Các môn tính vào học lực (loại môn đã bỏ học DA_BO_HOC — coi như chưa từng học).
+  // Lưu ý: KHÔNG dùng cho bộ lọc lớp còn trống — nơi đó vẫn cần danh sách đầy đủ.
+  const countedEnrollments = enrollments.filter(e => e.status !== 'DA_BO_HOC');
+
   // Compute GPA and credits
-  const overallGPA4 = enrollments.length > 0
-    ? (enrollments.reduce((sum, e) => sum + (e.totalGrade4 !== null && e.totalGrade4 !== undefined ? e.totalGrade4 : getGradePoint(e.letterGrade || e.grade || '')), 0) / enrollments.length)
+  const overallGPA4 = countedEnrollments.length > 0
+    ? (countedEnrollments.reduce((sum, e) => sum + (e.totalGrade4 !== null && e.totalGrade4 !== undefined ? e.totalGrade4 : getGradePoint(e.letterGrade || e.grade || '')), 0) / countedEnrollments.length)
     : 0;
 
-  const overallGPA10 = enrollments.length > 0
-    ? (enrollments.reduce((sum, e) => sum + (e.totalGrade10 !== null && e.totalGrade10 !== undefined ? e.totalGrade10 : (e.letterGrade || e.grade ? getGradePoint(e.letterGrade || e.grade || '') * 2.5 : 0)), 0) / enrollments.length)
+  const overallGPA10 = countedEnrollments.length > 0
+    ? (countedEnrollments.reduce((sum, e) => sum + (e.totalGrade10 !== null && e.totalGrade10 !== undefined ? e.totalGrade10 : (e.letterGrade || e.grade ? getGradePoint(e.letterGrade || e.grade || '') * 2.5 : 0)), 0) / countedEnrollments.length)
     : 0;
 
-  const totalCredits = enrollments
+  const totalCredits = countedEnrollments
     .filter(e => e.status === 'COMPLETED' || e.status === 'DA_HOAN_THANH' || e.status === 'ACTIVE' || e.status === 'DA_DANG_KY' || (e.letterGrade || e.grade) !== 'F')
     .reduce((sum, e) => sum + (e.credits || 3), 0);
 
   // Group enrollments by semester for charts
   const semesterGPAMap: Record<string, { gpa4: number; gpa10: number; count: number; semCredits: number }> = {};
-  enrollments.forEach(enroll => {
+  countedEnrollments.forEach(enroll => {
     const cls = classesDetail[enroll.classId];
     if (cls) {
       const semKey = `${cls.academicYear} HK${cls.semester}`;
@@ -482,7 +522,7 @@ export function StudentDashboard() {
   // Group all enrollments by Academic Year & Semester for detailed transcript
   const groupedEnrollments = (() => {
     const groups: Record<string, { year: string; semester: number; items: EnrollmentDto[] }> = {};
-    enrollments.forEach(enroll => {
+    countedEnrollments.forEach(enroll => {
       const cls = classesDetail[enroll.classId];
       const year = cls?.academicYear || 'Chưa rõ năm học';
       const semester = cls?.semester || 1;
@@ -572,7 +612,7 @@ export function StudentDashboard() {
   };
 
   const scheduleSlots: { day: number; start: number; end: number; cls: ClassDto }[] = [];
-  enrollments.forEach(enroll => {
+  countedEnrollments.forEach(enroll => {
     const cls = classesDetail[enroll.classId];
     if (cls && cls.schedule) {
       const dayMap: Record<string, number> = {
@@ -617,34 +657,56 @@ export function StudentDashboard() {
     return scheduleSlots.find(s => s.day === day && period >= s.start && period <= s.end);
   };
 
-  // Filter open classes
-  const filteredAvailableClasses = availableClasses.filter(cls => {
-    const isAlreadyEnrolled = enrollments.some(e => e.classId === cls.id);
-    if (isAlreadyEnrolled) return false;
+  // Thời gian học của khóa (span) suy từ nam_hoc '2022-2026'; fallback từ mã lớp/khóa.
+  const studySpan = (() => {
+    const ay = (student as any)?.academicYear || '';
+    const m = String(ay).match(/(\d{4}).*?(\d{4})/);
+    if (m) return { start: parseInt(m[1]), end: parseInt(m[2]) };
+    const codeM = String((student as any)?.cohort || student?.studentCode || '').match(/(\d{2})/);
+    if (codeM) { const y = 2000 + parseInt(codeM[1]); return { start: y, end: y + 4 }; }
+    return null;
+  })();
+  const eligibleYears: string[] | null = studySpan
+    ? Array.from({ length: Math.max(1, studySpan.end - studySpan.start) }, (_, i) => `${studySpan.start + i}-${studySpan.start + i + 1}`)
+    : null;
+  const cohortLabel = (student as any)?.cohort
+    ? String((student as any).cohort).match(/\d{2}/)?.[0]
+    : (student?.studentCode?.match(/1101(\d{2})/)?.[1] || null);
 
-    if (filterMode === 'not-yet') {
-      // Find completed course names
-      const completedSubjectNames = enrollments
-        .filter(e => e.grade && e.grade !== 'F')
-        .map(e => {
-          const det = classesDetail[e.classId];
-          return det ? det.subject : e.className;
-        });
-      
-      const isCompleted = completedSubjectNames.some(name => 
-        name?.toLowerCase().includes(cls.subject?.toLowerCase() || '') ||
-        cls.subject?.toLowerCase().includes(name?.toLowerCase() || '')
-      );
-      
-      return !isCompleted;
-    }
-    return true;
-  });
+  // Phân loại quan hệ của SV với một môn: MOI | HOC_LAI | CAI_THIEN | DANG_HOC
+  const classifyClass = (cls: any): 'MOI' | 'HOC_LAI' | 'CAI_THIEN' | 'DANG_HOC' => {
+    const subj = (cls.subject || '').trim().toLowerCase();
+    if (!subj) return 'MOI';
+    const hist = enrollments.filter(e => {
+      const s = (classesDetail[e.classId]?.subject || e.className || '').trim().toLowerCase();
+      return s && (s === subj || s.includes(subj) || subj.includes(s));
+    });
+    const inProgress = hist.some(e => e.classId !== cls.id && e.status === 'DA_DANG_KY'
+      && e.totalGrade10 == null && !e.letterGrade);
+    if (inProgress) return 'DANG_HOC';
+    const passed = hist.some(e => (e.letterGrade && e.letterGrade !== 'F') || (e.grade && e.grade !== 'F'));
+    if (passed) return 'CAI_THIEN';
+    const failed = hist.some(e => e.letterGrade === 'F' || e.grade === 'F');
+    if (failed) return 'HOC_LAI';
+    return 'MOI';
+  };
+
+  // Lớp mở phù hợp: trong span khóa, chưa đăng ký ĐANG hiệu lực lớp đó, kèm loại đăng ký.
+  // Chỉ ẩn lớp đang đăng ký (DA_DANG_KY); lớp đã bỏ (DA_BO_HOC) hiện lại để có thể đăng ký lại.
+  const availableWithType = availableClasses
+    .filter(cls => !enrollments.some(e => e.classId === cls.id && e.status === 'DA_DANG_KY'))
+    .filter(cls => !eligibleYears || !cls.academicYear || eligibleYears.includes(cls.academicYear))
+    .map(cls => ({ cls, regType: classifyClass(cls) }));
+
+  // Bộ lọc hiển thị: "not-yet" = môn cần học (mới + học lại); "all" = tất cả (gồm cải thiện & đang học).
+  const shownClasses = availableWithType.filter(({ regType }) =>
+    filterMode === 'all' ? true : (regType === 'MOI' || regType === 'HOC_LAI')
+  );
 
   if (loading && refreshTrigger === 0) {
     return (
       <div className="p-12 flex flex-col items-center justify-center min-h-[500px] gap-3">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-750 flex items-center justify-center shadow-lg shadow-blue-500/25">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center shadow-lg shadow-blue-500/25">
           <RefreshCw className="w-7 h-7 text-white animate-spin" />
         </div>
         <p className="text-slate-700 font-bold text-sm">Đang tải cổng thông tin sinh viên...</p>
@@ -774,11 +836,33 @@ export function StudentDashboard() {
             className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${
               activeTab === 'transcript'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
-                : 'bg-white border border-slate-200 text-slate-650 hover:bg-slate-50'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
           >
             <Award className="w-4.5 h-4.5" />
             Bảng điểm chi tiết
+          </button>
+          <button
+            onClick={() => setActiveTab('courses')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${
+              activeTab === 'courses'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <GraduationCap className="w-4.5 h-4.5" />
+            Khóa học của tôi
+          </button>
+          <button
+            onClick={() => setActiveTab('quiz')}
+            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${
+              activeTab === 'quiz'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <FileQuestion className="w-4.5 h-4.5" />
+            Bài trắc nghiệm
           </button>
         </div>
 
@@ -1138,10 +1222,10 @@ export function StudentDashboard() {
                       daySlots.sort((a, b) => a.start - b.start);
                       
                       return daySlots.map((slot, idx) => (
-                        <div key={idx} className="p-3.5 rounded-2xl bg-blue-50 border border-blue-150 space-y-1.5 text-xs text-left">
+                        <div key={idx} className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 space-y-1.5 text-xs text-left">
                           <p className="font-extrabold text-blue-900 leading-snug">{slot.cls.className}</p>
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Môn: {slot.cls.subject}</p>
-                          <p className="text-[10px] text-slate-650 font-semibold">Thời gian: Tiết {slot.start} - Tiết {slot.end}</p>
+                          <p className="text-[10px] text-slate-600 font-semibold">Thời gian: Tiết {slot.start} - Tiết {slot.end}</p>
                           <p className="text-[10px] text-blue-700 font-bold">Phòng: {slot.cls.room || 'Tự do'}</p>
                           <p className="text-[10px] text-indigo-900 font-bold">Giảng viên: {slot.cls.teacherName || 'Chưa phân công'}</p>
                         </div>
@@ -1166,7 +1250,7 @@ export function StudentDashboard() {
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse border border-slate-200/50 text-center min-w-[700px]">
                       <thead>
-                        <tr className="bg-slate-50 border-b border-slate-250 text-slate-700 font-bold text-sm">
+                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold text-sm">
                           <th className="py-4 border border-slate-200/50 w-20">Tiết</th>
                           {weekDays.map((date, idx) => {
                             const dayLabel = idx === 6 ? 'Chủ Nhật' : `Thứ ${idx + 2}`;
@@ -1346,7 +1430,7 @@ export function StudentDashboard() {
 
           // Helper: check if enrolled in a subject (by course code similarity with enrolled classCode/subject)
           const isEnrolled = (courseCode: string, courseName: string) => {
-            return enrollments.some(e => {
+            return countedEnrollments.some(e => {
               const cls = classesDetail[e.classId];
               const subj = cls?.subject || e.className || '';
               const code = cls?.classCode || '';
@@ -1357,7 +1441,7 @@ export function StudentDashboard() {
 
           // Helper: check if completed/passed a subject (has grade and grade is not F)
           const isCompleted = (courseCode: string, courseName: string) => {
-            return enrollments.some(e => {
+            return countedEnrollments.some(e => {
               const cls = classesDetail[e.classId];
               const subj = cls?.subject || e.className || '';
               const code = cls?.classCode || '';
@@ -1374,7 +1458,7 @@ export function StudentDashboard() {
               {/* Top bar */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-3">
-                  <label className="text-xs font-bold text-slate-650 flex-shrink-0">CTĐT thực hiện</label>
+                  <label className="text-xs font-bold text-slate-600 flex-shrink-0">CTĐT thực hiện</label>
                   <select className="px-4 py-2 border border-slate-700 rounded-lg bg-[#0d1b2a] text-white text-xs font-semibold min-w-[200px]">
                     <option>Công nghệ thông tin K2022</option>
                     <option>Công nghệ thông tin K2023</option>
@@ -1384,7 +1468,7 @@ export function StudentDashboard() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handlePrint}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-[#1a2a3a] border border-slate-650 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-all"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-[#1a2a3a] border border-slate-600 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition-all"
                   >
                     🖨 In
                   </button>
@@ -1454,7 +1538,7 @@ export function StudentDashboard() {
                             return (
                               <tr key={`${semGroup.semLabel}-${course.code}`}
                                 className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors">
-                                <td className="py-2.5 px-3 text-slate-400 text-center font-semibold">{idx + 1}</td>
+                                <td className="py-2.5 px-3 text-slate-300 text-center font-semibold">{idx + 1}</td>
                                 <td className="py-2.5 px-3 font-mono text-slate-300 font-semibold">{course.code}</td>
                                 <td className="py-2.5 px-3 text-white font-medium">
                                   {completed
@@ -1473,9 +1557,9 @@ export function StudentDashboard() {
                                     ? <span className="text-[#38bdf8] font-bold text-xs">x</span>
                                     : null}
                                 </td>
-                                <td className="py-2.5 px-3 text-center text-slate-350 font-semibold">{course.totalPeriods}</td>
-                                <td className="py-2.5 px-3 text-center text-slate-350 font-semibold">{course.theory}</td>
-                                <td className="py-2.5 px-3 text-center text-slate-350 font-semibold">{course.practice}</td>
+                                <td className="py-2.5 px-3 text-center text-white font-bold">{course.totalPeriods}</td>
+                                <td className="py-2.5 px-3 text-center text-sky-300 font-semibold">{course.theory}</td>
+                                <td className="py-2.5 px-3 text-center text-emerald-300 font-semibold">{course.practice}</td>
                                 <td className="py-2.5 px-3 text-center">
                                   <button className="p-1.5 hover:bg-slate-700 rounded-md transition-colors" title="Xem tiết thành phần">
                                     <span className="text-[#38bdf8] text-xs">☰</span>
@@ -1522,10 +1606,23 @@ export function StudentDashboard() {
                     onChange={(e: any) => setFilterMode(e.target.value)}
                     className="px-4 py-2 border-2 border-slate-200 bg-white text-slate-700 text-sm font-semibold rounded-xl focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="not-yet">Môn chưa học trong CTDT thực hiện</option>
-                    <option value="all">Tất cả các môn học mở đăng ký</option>
+                    <option value="not-yet">Môn cần học (mới + học lại)</option>
+                    <option value="all">Tất cả (gồm cải thiện &amp; đang học)</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Thông báo quy tắc đăng ký */}
+              <div className="rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-3 text-xs text-blue-900 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" /> Quy tắc đăng ký môn học
+                </p>
+                <p>• Bạn {cohortLabel ? <>thuộc <strong>khóa {cohortLabel}</strong> </> : null}
+                  {studySpan ? <>(thời gian học <strong>{studySpan.start}–{studySpan.end}</strong>)</> : null} — chỉ đăng ký được các lớp mở
+                  <strong> trong thời gian học của khóa</strong>, ở <strong>mọi học kỳ</strong>.</p>
+                <p>• Môn <span className="font-bold text-rose-700">đã rớt (F)</span> → đăng ký <strong>Học lại</strong>;
+                  môn <span className="font-bold text-emerald-700">đã đạt</span> → có thể đăng ký <strong>Học cải thiện</strong> để nâng điểm;
+                  môn <span className="font-bold text-amber-700">đang học</span> (chưa có điểm) thì <strong>chưa thể</strong> đăng ký lại.</p>
               </div>
 
               <div>
@@ -1537,9 +1634,9 @@ export function StudentDashboard() {
                         <th className="py-3 px-3"></th>
                         <th className="py-3 px-3">Mã MH</th>
                         <th className="py-3 px-3">Tên môn học</th>
-                        <th className="py-3 px-3">Nhóm</th>
-                        <th className="py-3 px-3">Tổ</th>
-                        <th className="py-3 px-3">Số TC</th>
+                        <th className="py-3 px-3">Loại</th>
+                        <th className="py-3 px-3">Năm học</th>
+                        <th className="py-3 px-3">HK</th>
                         <th className="py-3 px-3">Lớp</th>
                         <th className="py-3 px-3">Số lượng</th>
                         <th className="py-3 px-3">Còn lại</th>
@@ -1547,45 +1644,56 @@ export function StudentDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
-                      {filteredAvailableClasses.map((cls, idx) => {
+                      {shownClasses.map(({ cls, regType }) => {
                         const remaining = cls.maxStudents - cls.currentStudents;
+                        const blocked = regType === 'DANG_HOC';
+                        const badge = regType === 'HOC_LAI'
+                          ? { t: 'Học lại', c: 'bg-rose-50 text-rose-700 border-rose-200' }
+                          : regType === 'CAI_THIEN'
+                            ? { t: 'Cải thiện', c: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+                            : regType === 'DANG_HOC'
+                              ? { t: 'Đang học', c: 'bg-amber-50 text-amber-700 border-amber-200' }
+                              : { t: 'Học mới', c: 'bg-blue-50 text-blue-700 border-blue-200' };
                         return (
                           <tr key={cls.id} className="hover:bg-blue-50/10 transition-colors">
                             <td className="py-3.5 px-3">
                               <button
-                                disabled={isRegistering || remaining <= 0}
-                                onClick={() => handleRegister(cls.id)}
+                                disabled={isRegistering || remaining <= 0 || blocked}
+                                onClick={() => handleRegister(cls.id, regType, cls.subject)}
+                                title={blocked ? 'Bạn đang học môn này, chưa thể đăng ký lại' : ''}
                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase shadow-sm transition-all ${
-                                  remaining <= 0
+                                  remaining <= 0 || blocked
                                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
                                     : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
                                 }`}
                               >
-                                Đăng ký
+                                {blocked ? 'Đang học' : 'Đăng ký'}
                               </button>
                             </td>
-                            <td className="py-3.5 px-3 font-mono text-slate-500">{cls.classCode.substring(0, 6)}</td>
+                            <td className="py-3.5 px-3 font-mono text-slate-500">{cls.classCode?.substring(0, 8)}</td>
                             <td className="py-3.5 px-3 font-bold text-slate-900">{cls.subject}</td>
-                            <td className="py-3.5 px-3 text-slate-500 font-mono">01</td>
-                            <td className="py-3.5 px-3 text-slate-400">—</td>
-                            <td className="py-3.5 px-3 font-black text-slate-800">{cls.maxStudents ? 3 : 2}</td>
-                            <td className="py-3.5 px-3 font-bold text-blue-700">{cls.className.substring(0, 5)}</td>
-                            <td className="py-3.5 px-3 text-slate-500">{cls.maxStudents}</td>
-                            <td className={`py-3.5 px-3 font-black ${remaining <= 5 ? 'text-red-600' : 'text-slate-800'}`}>
+                            <td className="py-3.5 px-3">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.c}`}>{badge.t}</span>
+                            </td>
+                            <td className="py-3.5 px-3 text-slate-600 font-semibold">{cls.academicYear || '—'}</td>
+                            <td className="py-3.5 px-3 font-black text-slate-800 text-center">{cls.semester ?? '—'}</td>
+                            <td className="py-3.5 px-3 font-bold text-blue-700">{cls.className?.substring(0, 8)}</td>
+                            <td className="py-3.5 px-3 text-slate-500 text-center">{cls.maxStudents}</td>
+                            <td className={`py-3.5 px-3 font-black text-center ${remaining <= 5 ? 'text-red-600' : 'text-slate-800'}`}>
                               {remaining}
                             </td>
                             <td className="py-3.5 px-3 text-[10px] text-slate-600 leading-snug font-medium">
-                              {cls.schedule} / Phòng {cls.room || 'N/A'} <br />
+                              {cls.schedule || '—'} / Phòng {cls.room || 'N/A'} <br />
                               <span className="font-bold text-indigo-900">GV: {cls.teacherName || 'Chưa phân công'}</span>
                             </td>
                           </tr>
                         );
                       })}
 
-                      {filteredAvailableClasses.length === 0 && (
+                      {shownClasses.length === 0 && (
                         <tr>
                           <td colSpan={10} className="text-center py-10 text-slate-500">
-                            Không tìm thấy lớp học phần mở đăng ký phù hợp với bộ lọc.
+                            Không có lớp học phần mở đăng ký phù hợp với bộ lọc &amp; thời gian học của khóa bạn.
                           </td>
                         </tr>
                       )}
@@ -1614,11 +1722,7 @@ export function StudentDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
-                    {enrollments
-                      .filter(e => {
-                        const det = classesDetail[e.classId];
-                        return det?.academicYear === selectedAcademicYear && det?.semester === selectedSemester;
-                      })
+                    {activeEnrollments
                       .map((enroll) => {
                         const cls = classesDetail[enroll.classId];
                         return (
@@ -1654,13 +1758,10 @@ export function StudentDashboard() {
                         );
                       })}
 
-                    {enrollments.filter(e => {
-                      const det = classesDetail[e.classId];
-                      return det?.academicYear === selectedAcademicYear && det?.semester === selectedSemester;
-                    }).length === 0 && (
+                    {activeEnrollments.length === 0 && (
                       <tr>
                         <td colSpan={9} className="text-center py-10 text-slate-400 font-bold">
-                          Không tìm thấy dữ liệu môn học đã đăng ký cho học kỳ hiện tại.
+                          Bạn chưa đăng ký môn học nào.
                         </td>
                       </tr>
                     )}
@@ -1756,6 +1857,95 @@ export function StudentDashboard() {
                 ))
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'courses' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <h3 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-blue-600" />
+                KHÓA HỌC CỦA TÔI
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">Các lớp học phần bạn đã đăng ký. Vào từng khóa để xem tài liệu, nộp bài tập và làm trắc nghiệm.</p>
+            </div>
+            {countedEnrollments.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+                <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500 font-semibold">Bạn chưa đăng ký lớp học phần nào</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {countedEnrollments.map(en => {
+                  const cls = classesDetail[en.classId];
+                  return (
+                    <div key={en.id} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-extrabold text-slate-800">{cls?.subject || en.className || 'Học phần'}</h4>
+                        <p className="text-xs text-slate-500 mt-1 font-mono">{cls?.classCode}</p>
+                        {cls?.teacherName && <p className="text-xs text-slate-500 mt-0.5">GV: {cls.teacherName}</p>}
+                      </div>
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
+                          <span>Tiến độ</span><span className="text-blue-700">{courseProgress[en.classId] ?? 0}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all" style={{ width: `${courseProgress[en.classId] ?? 0}%` }} />
+                        </div>
+                      </div>
+                      <button onClick={() => navigate(`/student/course/${en.classId}`)} className="mt-3 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow">
+                        <BookOpen className="w-4 h-4" /> Vào học
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'quiz' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+              <h3 className="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+                <FileQuestion className="w-5 h-5 text-indigo-600" />
+                BÀI TRẮC NGHIỆM
+              </h3>
+              <p className="text-xs text-slate-500 mt-1">Các bài trắc nghiệm giảng viên đã mở cho những lớp học phần bạn đăng ký. Làm được nhiều lần, hệ thống lấy điểm cao nhất.</p>
+            </div>
+
+            {quizzes.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+                <FileQuestion className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-500 font-semibold">Chưa có bài trắc nghiệm nào</p>
+                <p className="text-xs text-slate-400 mt-1">Khi giảng viên xuất bản bài, nó sẽ hiện ở đây.</p>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {quizzes.map((q) => (
+                  <div key={q.quizId} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-extrabold text-slate-800">{q.title}</h4>
+                        {q.bestScore != null && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <Award className="w-3 h-3" /> Cao nhất {q.bestScore.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {q.className} · {q.questionsPerAttempt || q.enabledQuestions || 0} câu/lượt · Thang {q.maxScore ?? 10}đ
+                        {q.timeLimitMinutes ? ` · ${q.timeLimitMinutes} phút` : ''}
+                        {(q.attemptCount || 0) > 0 ? ` · Đã làm ${q.attemptCount} lần` : ''}
+                      </p>
+                    </div>
+                    <button onClick={() => navigate(`/student/quiz/${q.quizId}`)} className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md">
+                      <Play className="w-4 h-4" /> {(q.attemptCount || 0) > 0 ? 'Làm lại' : 'Làm bài'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -6,7 +6,7 @@ import adminIcon from '../../assets/admin-icon.png';
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen,
   LogOut, Shield, ChevronRight, Bell, Settings,
-  BarChart3, UserCog, UserPlus, UserCircle
+  BarChart3, UserCog, UserPlus, UserCircle, BookMarked
 } from 'lucide-react';
 
 interface NavItem {
@@ -25,18 +25,20 @@ export function Sidebar() {
     { to: '/admin/teachers', icon: Users, label: 'Giảng viên' },
     { to: '/admin/classes', icon: BookOpen, label: 'Lớp học' },
     { to: '/admin/enrollments', icon: UserPlus, label: 'Ghi danh' },
+    { to: '/admin/curriculum', icon: BookMarked, label: 'Chương trình khung' },
     { to: '/admin/profile', icon: UserCircle, label: 'Hồ sơ cá nhân' },
   ];
 
   const teacherLinks: NavItem[] = [
     { to: '/teacher', icon: LayoutDashboard, label: 'Tổng quan' },
     { to: '/teacher/classes', icon: BookOpen, label: 'Lớp học phần' },
-    { to: '/teacher/students', icon: GraduationCap, label: 'Lớp cố vấn' },
+    { to: '/teacher/advisor', icon: GraduationCap, label: 'Lớp cố vấn' },
     { to: '/teacher/profile', icon: UserCircle, label: 'Hồ sơ cá nhân' },
   ];
 
   const studentLinks: NavItem[] = [
     { to: '/student', icon: LayoutDashboard, label: 'Trang cá nhân' },
+    { to: '/student/curriculum', icon: BookMarked, label: 'Chương trình đào tạo' },
   ];
 
   const links = user?.role === 'admin' ? adminLinks : user?.role === 'teacher' ? teacherLinks : studentLinks;

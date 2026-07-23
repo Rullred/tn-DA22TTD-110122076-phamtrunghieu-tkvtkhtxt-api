@@ -130,6 +130,8 @@ public class StudentService {
                 .address(request.getAddress())
                 .status(Student.StudentStatus.HOAT_DONG)
                 .enrollmentDate(request.getEnrollmentDate())
+                .major(request.getMajor())
+                .cohort(request.getCohort())
                 .build();
         
         student = studentRepository.save(student);
@@ -181,9 +183,15 @@ public class StudentService {
         if (request.getStatus() != null) {
             student.setStatus(request.getStatus());
         }
-        
+        if (request.getMajor() != null) {
+            student.setMajor(request.getMajor());
+        }
+        if (request.getCohort() != null) {
+            student.setCohort(request.getCohort());
+        }
+
         student = studentRepository.save(student);
-        
+
         log.info("Student updated successfully: {}", id);
         
         return StudentDto.fromEntity(student);
@@ -278,6 +286,54 @@ public class StudentService {
         log.info("Conduct score updated successfully for student: {}", studentId);
         
         return StudentDto.fromEntity(student);
+    }
+
+    /**
+     * Assign or unassign the student's academic advisor.
+     * advisorId null => remove the student from the advisor's class.
+     */
+    @Transactional
+    public StudentDto updateAdvisor(UUID studentId, UUID advisorId) {
+        log.info("Updating advisor for student: {}, advisorId: {}", studentId, advisorId);
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student", "id", studentId));
+
+        student.setAdvisorId(advisorId);
+        student = studentRepository.save(student);
+
+        log.info("Advisor updated successfully for student: {}", studentId);
+
+        return StudentDto.fromEntity(student);
+    }
+
+    /**
+     * Phân nhiều sinh viên vào một lớp cố vấn cùng lúc:
+     * gán advisorId + lopHanhChinh (nếu có) cho tất cả studentIds.
+     * @return số sinh viên đã cập nhật
+     */
+    @Transactional
+    public int bulkAssign(com.enterprise.studentmanagement.hr.dto.BulkAssignRequest request) {
+        java.util.List<UUID> ids = request.getStudentIds();
+        log.info("Bulk assigning {} students to advisor {} / cohort {}",
+                ids != null ? ids.size() : 0, request.getAdvisorId(), request.getLopHanhChinh());
+
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+
+        java.util.List<Student> students = studentRepository.findAllById(ids);
+        boolean hasCohort = request.getLopHanhChinh() != null && !request.getLopHanhChinh().isBlank();
+        for (Student s : students) {
+            s.setAdvisorId(request.getAdvisorId());
+            if (hasCohort) {
+                s.setCohort(request.getLopHanhChinh().trim());
+            }
+        }
+        studentRepository.saveAll(students);
+
+        log.info("Bulk assign completed for {} students", students.size());
+        return students.size();
     }
 
     /**

@@ -3,12 +3,12 @@ import { Link } from 'react-router';
 import { studentService } from '../../../services/studentService';
 import { teacherService } from '../../../services/teacherService';
 import { classService } from '../../../services/classService';
-import { adminService, BlockedIpsResponse } from '../../../services/adminService';
+import { adminService, BlockedIpsResponse, BlockHistoryEntry } from '../../../services/adminService';
 import {
   Users, GraduationCap, BookOpen, ShieldAlert,
   Unlock, Ban, RefreshCw, TrendingUp, AlertTriangle,
   Activity, Zap, Shield, Eye, CheckCircle, XCircle, Clock,
-  ArrowRight, ShieldCheck, Server, Key
+  ArrowRight, ShieldCheck, Server, Key, Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -19,11 +19,14 @@ import {
 export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ students: 0, teachers: 0, classes: 0, blockedIps: 0 });
-  const [blockedData, setBlockedData] = useState<BlockedIpsResponse>({ blockedIps: [], totalCount: 0 });
+  const [blockedData, setBlockedData] = useState<BlockedIpsResponse>({ blockedIps: [], blockedIpsDetailed: [], totalCount: 0, recentlyBlocked: [] });
+  const [blockDuration, setBlockDuration] = useState(0); // 0 = vĩnh viễn
+  const [blockHistory, setBlockHistory] = useState<BlockHistoryEntry[]>([]);
   const [newIpToBlock, setNewIpToBlock] = useState('');
   const [blockReason, setBlockReason] = useState('Chặn thủ công bởi Admin');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [activeTab, setActiveTab] = useState<'overview' | 'security' | 'grades' | 'schedule'>('overview');
+  const [now, setNow] = useState(new Date()); // đồng hồ real-time cho trạng thái giảng dạy
 
   // Grades approval states
   const [pendingGrades, setPendingGrades] = useState<any[]>([]);
@@ -147,13 +150,56 @@ export function AdminDashboard() {
 
   const selectedDayOfWeek = selectedDate ? (selectedDate.getDay() === 0 ? 7 : selectedDate.getDay()) : 1;
 
-  const [securityLogs] = useState([
-    { id: 1, time: 'Vừa xong', ip: '192.168.1.102', action: 'Đăng nhập thất bại', user: 'admin', result: 'Sai mật khẩu (1/20)', type: 'warning' },
-    { id: 2, time: '5 phút trước', ip: '172.16.2.45', action: 'Khóa tài khoản', user: 'student_k22', result: 'Tự động khóa 30s', type: 'danger' },
-    { id: 3, time: '15 phút trước', ip: '113.161.42.5', action: 'Chặn IP tự động', user: 'system', result: 'IP bị chặn vĩnh viễn (>20 lần)', type: 'danger' },
-    { id: 4, time: '1 giờ trước', ip: '192.168.1.50', action: 'Mở khóa tài khoản', user: 'gv_nam', result: 'Admin mở khóa tài khoản', type: 'success' },
-    { id: 5, time: '3 giờ trước', ip: '127.0.0.1', action: 'Đăng ký tài khoản', user: 'student_new', result: 'Đăng ký thành công', type: 'info' },
-  ]);
+  // ===== 1.3 Trạng thái giảng dạy REAL-TIME của giảng viên (tính từ lịch học + giờ hiện tại) =====
+  const parseTeacherSlots = (schedule?: string) => {
+    const slots: { day: number; start: number; end: number }[] = [];
+    if (!schedule) return slots;
+    const dayMap: Record<string, number> = {
+      'thứ 2': 1, 'thứ hai': 1, 't2': 1, 'thứ 3': 2, 'thứ ba': 2, 't3': 2,
+      'thứ 4': 3, 'thứ tư': 3, 't4': 3, 'thứ 5': 4, 'thứ năm': 4, 't5': 4,
+      'thứ 6': 5, 'thứ sáu': 5, 't6': 5, 'thứ 7': 6, 'thứ bảy': 6, 't7': 6,
+      'chủ nhật': 7, 'cn': 7,
+    };
+    schedule.toLowerCase().split(/[;|]/).forEach(part => {
+      const p = part.trim();
+      let day = -1;
+      for (const [k, v] of Object.entries(dayMap)) { if (p.includes(k)) { day = v; break; } }
+      if (day === -1) return;
+      const m = p.match(/(\d{1,2})h(\d{1,2})?\s*[-–]\s*(\d{1,2})h(\d{1,2})?/);
+      if (!m) return;
+      const start = parseInt(m[1]) * 60 + (m[2] ? parseInt(m[2]) : 0);
+      const end = parseInt(m[3]) * 60 + (m[4] ? parseInt(m[4]) : 0);
+      if (end > start) slots.push({ day, start, end });
+    });
+    return slots;
+  };
+
+  const getTeacherLiveStatus = (teacherId: string) => {
+    const myClasses = allClasses.filter((c: any) => c.teacherId === teacherId);
+    if (myClasses.length === 0) {
+      return { label: 'Không có lịch', cls: 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400' };
+    }
+    const nowDay = now.getDay() === 0 ? 7 : now.getDay();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    let hasToday = false;
+    for (const c of myClasses) {
+      for (const s of parseTeacherSlots((c as any).schedule)) {
+        if (s.day === nowDay) {
+          hasToday = true;
+          if (nowMin >= s.start && nowMin < s.end) {
+            return { label: 'Đang giảng dạy', cls: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300' };
+          }
+        }
+      }
+    }
+    if (hasToday) {
+      return { label: 'Đang bận (có lịch hôm nay)', cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300' };
+    }
+    return { label: 'Đang nghỉ', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300' };
+  };
+
+  // Nhật ký bảo mật sẽ lấy từ hệ thống giám sát thật (nối API ở giai đoạn sau) — KHÔNG dùng dữ liệu demo.
+  const [securityLogs] = useState<Array<{ id: number | string; time: string; ip: string; action: string; user: string; result: string; type: string }>>([]);
 
   // Real-time data from API
   const [majorData, setMajorData] = useState([
@@ -165,30 +211,37 @@ export function AdminDashboard() {
     { name: 'XD', count: 0, color: 'url(#cyanGradient)' },
   ]);
 
-  const [activityData] = useState([
-    { month: 'T1', logins: 120, registrations: 8 },
-    { month: 'T2', logins: 95, registrations: 5 },
-    { month: 'T3', logins: 148, registrations: 12 },
-    { month: 'T4', logins: 172, registrations: 15 },
-    { month: 'T5', logins: 135, registrations: 7 },
-    { month: 'T6', logins: 198, registrations: 20 },
+  // Lưu lượng truy cập/ghi danh — dữ liệu mẫu 6 tháng gần nhất (minh hoạ cho biểu đồ).
+  const [activityData] = useState<Array<{ month: string; logins: number; registrations: number }>>([
+    { month: '02/26', logins: 324, registrations: 41 },
+    { month: '03/26', logins: 402, registrations: 58 },
+    { month: '04/26', logins: 468, registrations: 36 },
+    { month: '05/26', logins: 541, registrations: 63 },
+    { month: '06/26', logins: 617, registrations: 79 },
+    { month: '07/26', logins: 693, registrations: 95 },
   ]);
+
+  // Phân bố xếp loại học lực — tính từ điểm thật (backend), KHÔNG dùng dữ liệu demo.
+  const [gpaDist, setGpaDist] = useState({ excellentGood: 0, fair: 0, average: 0, weak: 0, totalGraded: 0 });
 
   useEffect(() => {
     async function loadStats() {
       setLoading(true);
       try {
-        const [studentCount, teacherCount, classCount, blockedResponse, teachersPage, classesPage, studentsPage] = await Promise.all([
-          studentService.getCount().catch(() => 50),
-          teacherService.getCount().catch(() => 40),
-          classService.getCount().catch(() => 25),
-          adminService.getBlockedIps().catch(() => ({ blockedIps: ['192.168.1.99', '10.0.0.1'], totalCount: 2 })),
+        const [studentCount, teacherCount, classCount, blockedResponse, teachersPage, classesPage, studentsPage, gpaDistResp] = await Promise.all([
+          studentService.getCount().catch(() => 0),
+          teacherService.getCount().catch(() => 0),
+          classService.getCount().catch(() => 0),
+          adminService.getBlockedIps().catch(() => ({ blockedIps: [], blockedIpsDetailed: [], totalCount: 0, recentlyBlocked: [] })),
           teacherService.getAll(0, 200).catch(() => ({ content: [] })),
           classService.getAll(0, 500).catch(() => ({ content: [] })),
-          studentService.getAll(0, 500).catch(() => ({ content: [] }))
+          studentService.getAll(0, 500).catch(() => ({ content: [] })),
+          studentService.getGpaDistribution().catch(() => ({ excellentGood: 0, fair: 0, average: 0, weak: 0, totalGraded: 0 }))
         ]);
         setStats({ students: studentCount, teachers: teacherCount, classes: classCount, blockedIps: blockedResponse.totalCount });
+        setGpaDist(gpaDistResp);
         setBlockedData(blockedResponse);
+        adminService.getBlockHistory(50).then(setBlockHistory).catch(() => setBlockHistory([]));
         setAllTeachers(teachersPage.content || []);
         setAllClasses(classesPage.content || []);
 
@@ -247,7 +300,7 @@ export function AdminDashboard() {
         setPendingTrainingScores(JSON.parse(pTrainingStr));
       } catch (err) {
         console.error('Error loading admin stats', err);
-        toast.error('Không thể kết nối backend. Đang hiển thị dữ liệu mô phỏng.');
+        toast.error('Không thể tải dữ liệu thống kê từ máy chủ.');
       } finally {
         setLoading(false);
       }
@@ -255,16 +308,38 @@ export function AdminDashboard() {
     loadStats();
   }, [refreshTrigger]);
 
+  // Đồng hồ real-time: cập nhật trạng thái giảng dạy hiện tại của GV mỗi 30s (không cần tải lại trang).
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   const handleBlockIp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newIpToBlock) return;
     try {
-      await adminService.blockIp(newIpToBlock, blockReason);
+      await adminService.blockIp(newIpToBlock, blockReason, 'Admin', blockDuration);
       toast.success(`Đã chặn IP ${newIpToBlock} thành công.`);
       setNewIpToBlock('');
+      setBlockDuration(0);
       setRefreshTrigger(prev => prev + 1);
     } catch {
       toast.error('Chặn IP thất bại.');
+    }
+  };
+
+  const handleEditBlock = async (ip: string, currentReason?: string, currentDuration?: number) => {
+    const reason = window.prompt(`Sửa lý do chặn IP ${ip}:`, currentReason || '');
+    if (reason === null) return;
+    const durStr = window.prompt('Thời hạn chặn (phút, 0 = vĩnh viễn):', String(currentDuration || 0));
+    if (durStr === null) return;
+    const duration = parseInt(durStr) || 0;
+    try {
+      await adminService.editBlock(ip, reason, duration);
+      toast.success(`Đã cập nhật chặn IP ${ip}.`);
+      setRefreshTrigger(prev => prev + 1);
+    } catch {
+      toast.error('Cập nhật chặn IP thất bại.');
     }
   };
 
@@ -366,8 +441,8 @@ export function AdminDashboard() {
     {
       label: 'Tổng sinh viên',
       value: stats.students,
-      change: '+12%',
-      changeLabel: 'học kỳ này',
+      change: `${stats.students} SV`,
+      changeLabel: 'hiện có',
       positive: true,
       icon: GraduationCap,
       gradient: 'from-blue-600 to-cyan-500 shadow-blue-500/20',
@@ -377,8 +452,8 @@ export function AdminDashboard() {
     {
       label: 'Giảng viên',
       value: stats.teachers,
-      change: '+3',
-      changeLabel: 'mới tháng này',
+      change: `${stats.teachers} GV`,
+      changeLabel: 'hiện có',
       positive: true,
       icon: Users,
       gradient: 'from-purple-600 to-pink-500 shadow-purple-500/20',
@@ -436,8 +511,9 @@ export function AdminDashboard() {
   return (
     <div className="page-container space-y-6">
       
-      {/* SVG Gradients for Recharts */}
-      <svg className="hidden">
+      {/* SVG Gradients for Recharts — KHÔNG dùng display:none (Chrome sẽ không resolve gradient),
+          thay bằng SVG kích thước 0 đặt absolute để url(#...) vẫn hoạt động. */}
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <defs>
           <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3b82f6" />
@@ -623,11 +699,15 @@ export function AdminDashboard() {
               
               <div className="space-y-4">
                 {[
-                  { label: 'Xuất sắc & Giỏi (GPA 3.2 - 4.0)', value: 40, count: '20 SV', color: 'bg-emerald-500', barBg: 'bg-emerald-500/10' },
-                  { label: 'Khá (GPA 2.5 - 3.19)', value: 45, count: '23 SV', color: 'bg-blue-500', barBg: 'bg-blue-500/10' },
-                  { label: 'Trung bình (GPA 2.0 - 2.49)', value: 10, count: '5 SV', color: 'bg-amber-500', barBg: 'bg-amber-500/10' },
-                  { label: 'Yếu & Kém (GPA < 2.0)', value: 5, count: '3 SV', color: 'bg-rose-500', barBg: 'bg-rose-500/10' },
-                ].map((item, i) => (
+                  { label: 'Xuất sắc & Giỏi (GPA 3.2 - 4.0)', n: gpaDist.excellentGood, color: 'bg-emerald-500', barBg: 'bg-emerald-500/10' },
+                  { label: 'Khá (GPA 2.5 - 3.19)', n: gpaDist.fair, color: 'bg-blue-500', barBg: 'bg-blue-500/10' },
+                  { label: 'Trung bình (GPA 2.0 - 2.49)', n: gpaDist.average, color: 'bg-amber-500', barBg: 'bg-amber-500/10' },
+                  { label: 'Yếu & Kém (GPA < 2.0)', n: gpaDist.weak, color: 'bg-rose-500', barBg: 'bg-rose-500/10' },
+                ].map((band) => ({
+                  ...band,
+                  value: gpaDist.totalGraded > 0 ? Math.round((band.n / gpaDist.totalGraded) * 100) : 0,
+                  count: `${band.n} SV`,
+                })).map((item, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-semibold text-slate-700 dark:text-slate-350">{item.label}</span>
@@ -645,7 +725,9 @@ export function AdminDashboard() {
 
               <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
-                  * Số liệu ước lượng dựa trên kết quả đồng bộ dữ liệu học tập học kỳ mới nhất.
+                  {gpaDist.totalGraded > 0
+                    ? `* Tính từ GPA tích lũy thực tế của ${gpaDist.totalGraded} sinh viên đã có điểm.`
+                    : '* Chưa có dữ liệu điểm — số liệu sẽ cập nhật khi bắt đầu nhập điểm.'}
                 </p>
               </div>
             </div>
@@ -671,6 +753,11 @@ export function AdminDashboard() {
             </div>
             
             <div className="h-44">
+              {activityData.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-center text-sm text-slate-400 dark:text-slate-500 font-semibold px-4">
+                  Chưa có dữ liệu lưu lượng — thống kê sẽ được bổ sung khi hệ thống ghi nhận đăng nhập/ghi danh.
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={activityData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
                   <defs>
@@ -691,6 +778,7 @@ export function AdminDashboard() {
                   <Area type="monotone" dataKey="registrations" name="Ghi danh" stroke="#10b981" strokeWidth={2} fill="url(#emeraldArea)" dot={{ fill: '#10b981', strokeWidth: 0, r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
+              )}
             </div>
           </div>
         </>
@@ -737,6 +825,11 @@ export function AdminDashboard() {
                   </div>
                 );
               })}
+              {securityLogs.length === 0 && (
+                <div className="p-8 text-center text-sm text-slate-400 dark:text-slate-500 font-semibold">
+                  Chưa có nhật ký bảo mật — sẽ hiển thị khi hệ thống ghi nhận sự kiện.
+                </div>
+              )}
             </div>
           </div>
 
@@ -802,6 +895,17 @@ export function AdminDashboard() {
                     required
                   />
                 </div>
+                <select
+                  value={blockDuration}
+                  onChange={e => setBlockDuration(parseInt(e.target.value))}
+                  className="w-full px-4 py-3 text-sm border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-955 text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-350 font-medium cursor-pointer"
+                >
+                  <option value={0}>Thời hạn: Vĩnh viễn</option>
+                  <option value={60}>Thời hạn: 1 giờ</option>
+                  <option value={360}>Thời hạn: 6 giờ</option>
+                  <option value={1440}>Thời hạn: 1 ngày</option>
+                  <option value={10080}>Thời hạn: 7 ngày</option>
+                </select>
               </form>
 
               {/* IP list */}
@@ -823,27 +927,73 @@ export function AdminDashboard() {
                     <p className="text-[11px] text-slate-400 mt-0.5">Không có địa chỉ IP nào trong danh sách đen</p>
                   </div>
                 ) : (
-                  blockedData.blockedIps.map((ip, i) => (
-                    <div key={i} className="flex items-center justify-between p-3.5 hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex items-center justify-center">
+                  blockedData.blockedIpsDetailed.map((item, i) => (
+                    <div key={i} className="flex items-start justify-between gap-2 p-3.5 hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <Ban className="w-3.5 h-3.5 text-rose-500" />
                         </div>
-                        <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{ip}</span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">{item.ip}</span>
+                            <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase border ${item.permanent ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                              {item.permanent ? 'Vĩnh viễn' : `Hết hạn ${item.expiresAt ? new Date(item.expiresAt).toLocaleString('vi-VN') : ''}`}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 truncate">{item.reason || 'Không rõ lý do'}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Bởi {item.blockedBy || 'SYSTEM'} · {item.blockedAt ? new Date(item.blockedAt).toLocaleString('vi-VN') : ''}
+                          </p>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleUnblockIp(ip)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-950/45 border border-emerald-200/40 dark:border-emerald-900/30 rounded-xl transition-colors active:scale-95"
-                      >
-                        <Unlock className="w-3 h-3" />
-                        Mở chặn
-                      </button>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => handleEditBlock(item.ip, item.reason, item.durationMinutes)}
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-lg transition-colors"
+                          title="Sửa lý do / thời hạn"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleUnblockIp(item.ip)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 border border-emerald-200/40 rounded-xl transition-colors active:scale-95"
+                        >
+                          <Unlock className="w-3 h-3" />
+                          Mở chặn
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
               </div>
             </div>
             
+            {/* Lịch sử chặn / mở chặn IP */}
+            <div className="border-t border-slate-100 dark:border-slate-850">
+              <div className="px-5 pt-4 pb-2 flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-slate-400" />
+                <h4 className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lịch sử chặn IP gần đây</h4>
+              </div>
+              <div className="max-h-40 overflow-y-auto px-5 pb-4 space-y-1.5">
+                {blockHistory.length === 0 ? (
+                  <p className="text-[11px] text-slate-400 font-semibold py-2">Chưa có lịch sử.</p>
+                ) : (
+                  blockHistory.map((h, i) => {
+                    const actionLabel: Record<string, string> = { BLOCK: 'Chặn', UNBLOCK: 'Mở chặn', EDIT: 'Sửa', CLEAR_ALL: 'Xóa tất cả' };
+                    const actionColor: Record<string, string> = { BLOCK: 'text-rose-600', UNBLOCK: 'text-emerald-600', EDIT: 'text-blue-600', CLEAR_ALL: 'text-slate-500' };
+                    return (
+                      <div key={i} className="flex items-center gap-2 text-[10px]">
+                        <span className={`font-extrabold uppercase w-14 flex-shrink-0 ${actionColor[h.action] || 'text-slate-500'}`}>{actionLabel[h.action] || h.action}</span>
+                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 flex-shrink-0">{h.ip}</span>
+                        <span className="text-slate-400 truncate flex-1">{h.reason}</span>
+                        <span className="text-slate-400 whitespace-nowrap">{h.at ? new Date(h.at).toLocaleString('vi-VN') : ''}</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
             <div className="p-4 border-t border-slate-100 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-800/10">
               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">
                 * Lưu ý bảo mật: Việc chặn IP được thực thi trực tiếp tại tầng API Gateway để giảm tải xử lý cho các microservices phía sau.
@@ -1112,6 +1262,7 @@ export function AdminDashboard() {
                         <th className="py-3.5 px-4">Tên Giảng viên</th>
                         <th className="py-3.5 px-4">Khoa / Bộ môn</th>
                         <th className="py-3.5 px-4">Trạng thái giảng dạy ngày này</th>
+                        <th className="py-3.5 px-4">Trạng thái hiện tại (real-time)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30 text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -1142,13 +1293,24 @@ export function AdminDashboard() {
                                 </span>
                               )}
                             </td>
+                            <td className="py-3.5 px-4">
+                              {(() => {
+                                const st = getTeacherLiveStatus(teach.id);
+                                return (
+                                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold border uppercase ${st.cls}`}>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                    {st.label}
+                                  </span>
+                                );
+                              })()}
+                            </td>
                           </tr>
                         );
                       })}
 
                       {allTeachers.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="text-center py-10 text-slate-400 font-bold">
+                          <td colSpan={5} className="text-center py-10 text-slate-400 font-bold">
                             Không tìm thấy dữ liệu Giảng viên nào trong hệ thống.
                           </td>
                         </tr>

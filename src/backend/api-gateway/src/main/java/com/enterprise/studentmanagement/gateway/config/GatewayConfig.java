@@ -64,7 +64,47 @@ public class GatewayConfig {
                                 .filter(rateLimitFilter.apply(new RateLimitFilter.Config()))
                                 .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
                         .uri("lb://hr-service"))
-                
+
+                .route("hr-curriculum", r -> r
+                        .path("/api/curriculum/**")
+                        .filters(f -> f
+                                .filter(ipBlacklistFilter.apply(new IpBlacklistFilter.Config()))
+                                .filter(rateLimitFilter.apply(new RateLimitFilter.Config()))
+                                .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
+                        .uri("lb://hr-service"))
+
+                .route("hr-quizzes", r -> r
+                        .path("/api/quizzes/**")
+                        .filters(f -> f
+                                .filter(ipBlacklistFilter.apply(new IpBlacklistFilter.Config()))
+                                .filter(rateLimitFilter.apply(new RateLimitFilter.Config()))
+                                .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
+                        .uri("lb://hr-service"))
+
+                .route("hr-learning", r -> r
+                        .path("/api/learning/**")
+                        .filters(f -> f
+                                .filter(ipBlacklistFilter.apply(new IpBlacklistFilter.Config()))
+                                .filter(rateLimitFilter.apply(new RateLimitFilter.Config()))
+                                .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
+                        .uri("lb://hr-service"))
+
+                .route("hr-forum", r -> r
+                        .path("/api/forum/**")
+                        .filters(f -> f
+                                .filter(ipBlacklistFilter.apply(new IpBlacklistFilter.Config()))
+                                .filter(rateLimitFilter.apply(new RateLimitFilter.Config()))
+                                .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
+                        .uri("lb://hr-service"))
+
+                .route("hr-proposals", r -> r
+                        .path("/api/proposals/**")
+                        .filters(f -> f
+                                .filter(ipBlacklistFilter.apply(new IpBlacklistFilter.Config()))
+                                .filter(rateLimitFilter.apply(new RateLimitFilter.Config()))
+                                .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
+                        .uri("lb://hr-service"))
+
                 .build();
     }
 }

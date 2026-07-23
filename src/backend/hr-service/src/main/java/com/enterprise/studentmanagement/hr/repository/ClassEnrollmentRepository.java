@@ -39,6 +39,11 @@ public interface ClassEnrollmentRepository extends JpaRepository<ClassEnrollment
     Page<ClassEnrollment> findByStudentId(UUID studentId, Pageable pageable);
 
     /**
+     * Find all enrollments for a student (unpaged) — used for academic progress.
+     */
+    List<ClassEnrollment> findByStudentId(UUID studentId);
+
+    /**
      * Find enrollments by class and status
      */
     List<ClassEnrollment> findByClassIdAndStatus(UUID classId, ClassEnrollment.EnrollmentStatus status);

@@ -47,6 +47,17 @@ export interface UpdateTeacherRequest {
 
 export const teacherService = {
   /**
+   * Lấy hồ sơ giáo viên của người dùng đang đăng nhập.
+   * Gateway inject X-User-Id từ token; truyền thêm email để fallback.
+   */
+  async getMe(email?: string): Promise<TeacherDto> {
+    const response = await api.get<ApiResponse<TeacherDto>>('/api/teachers/me', {
+      params: { email: email || undefined }
+    });
+    return response.data.data;
+  },
+
+  /**
    * Get all teachers with pagination
    */
   async getAll(page = 0, size = 20, sortBy = 'id', sortDir = 'ASC'): Promise<PageResponse<TeacherDto>> {

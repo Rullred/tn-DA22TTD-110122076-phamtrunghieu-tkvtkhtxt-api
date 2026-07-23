@@ -197,6 +197,37 @@ public class StudentController {
     }
 
     /**
+     * Phân nhiều sinh viên vào một lớp cố vấn cùng lúc (gán GV cố vấn + mã lớp).
+     * PUT /api/students/bulk-assign
+     * Body: { "studentIds": [...], "advisorId": "<uuid>", "lopHanhChinh": "DA22TTD" }
+     */
+    @PutMapping("/bulk-assign")
+    public ResponseEntity<ApiResponse<Integer>> bulkAssign(@Valid @RequestBody BulkAssignRequest request) {
+        log.info("PUT /api/students/bulk-assign - {} students", request.getStudentIds() != null ? request.getStudentIds().size() : 0);
+
+        int count = studentService.bulkAssign(request);
+
+        return ResponseEntity.ok(ApiResponse.success(count, "Đã phân " + count + " sinh viên vào lớp cố vấn"));
+    }
+
+    /**
+     * Assign / unassign a student's academic advisor.
+     * PUT /api/students/{id}/advisor
+     * Body: { "advisorId": "<uuid>" } to assign, or { "advisorId": null } to unassign.
+     */
+    @PutMapping("/{id}/advisor")
+    public ResponseEntity<ApiResponse<StudentDto>> updateAdvisor(
+            @PathVariable UUID id,
+            @RequestBody UpdateAdvisorRequest request) {
+
+        log.info("PUT /api/students/{}/advisor - advisorId: {}", id, request.getAdvisorId());
+
+        StudentDto student = studentService.updateAdvisor(id, request.getAdvisorId());
+
+        return ResponseEntity.ok(ApiResponse.success(student, "Advisor updated successfully"));
+    }
+
+    /**
      * Get students by advisor (for advisor to view their students)
      * GET /api/students/advisor/{advisorId}
      */

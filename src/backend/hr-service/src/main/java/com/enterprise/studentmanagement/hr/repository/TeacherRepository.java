@@ -28,6 +28,11 @@ public interface TeacherRepository extends JpaRepository<Teacher, UUID> {
     Optional<Teacher> findByTeacherCode(String teacherCode);
 
     /**
+     * Find teacher by email
+     */
+    Optional<Teacher> findByEmail(String email);
+
+    /**
      * Check if teacher code exists
      */
     boolean existsByTeacherCode(String teacherCode);

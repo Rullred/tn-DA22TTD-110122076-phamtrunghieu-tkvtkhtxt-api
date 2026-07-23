@@ -62,6 +62,14 @@ public class User extends AuditableEntity {
     @Column(name = "ip_dang_nhap_cuoi", length = 45)
     private String lastLoginIp;
 
+    // TOTP (Google Authenticator) fields
+    @Column(name = "totp_secret", length = 255)
+    private String totpSecret;
+
+    @Column(name = "totp_enabled", nullable = false)
+    @Builder.Default
+    private Boolean totpEnabled = false;
+
     /**
      * Check if account is currently locked
      */

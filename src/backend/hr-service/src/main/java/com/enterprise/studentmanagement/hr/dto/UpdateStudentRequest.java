@@ -37,4 +37,10 @@ public class UpdateStudentRequest {
     private String address;
 
     private Student.StudentStatus status;
+
+    @Size(max = 100, message = "Major must not exceed 100 characters")
+    private String major;
+
+    @Size(max = 30, message = "Cohort must not exceed 30 characters")
+    private String cohort;
 }

@@ -49,6 +49,22 @@ public class TeacherController {
     }
 
     /**
+     * Lấy hồ sơ giáo viên của người dùng hiện tại.
+     * GET /api/teachers/me
+     * Gateway inject X-User-Id; frontend có thể truyền thêm ?email= để fallback.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<TeacherDto>> getCurrentTeacher(
+            @RequestHeader(value = "X-User-Id", required = false) UUID userId,
+            @RequestParam(required = false) String email) {
+        log.info("GET /api/teachers/me - userId: {}, email: {}", userId, email);
+
+        TeacherDto teacher = teacherService.getCurrentTeacher(userId, email);
+
+        return ResponseEntity.ok(ApiResponse.success(teacher, "Current teacher retrieved successfully"));
+    }
+
+    /**
      * Get teacher by ID
      * GET /api/teachers/{id}
      */

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { studentService, StudentDto } from '../../../services/studentService';
-import { classService, ClassDto } from '../../../services/classService';
 import { authService } from '../../../services/authService';
 import { teacherService, TeacherDto } from '../../../services/teacherService';
 import { Search, Plus, Edit, Trash2, Eye, GraduationCap, X, UserPlus, RefreshCw, Mail, Phone, MapPin, Calendar, BookOpen, ShieldCheck, User, Lock, Settings } from 'lucide-react';
@@ -10,7 +9,6 @@ import studentIcon from '../../../assets/student-icon.png';
 
 export function Students() {
   const [students, setStudents] = useState<StudentDto[]>([]);
-  const [classes, setClasses] = useState<ClassDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterClass, setFilterClass] = useState('all');
@@ -19,12 +17,15 @@ export function Students() {
   // Tab states
   const [activeTab, setActiveTab] = useState<'unassigned' | 'assigned'>('unassigned');
   
-  // Quick Assignment states
+  // Advisor-class assignment states
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [assigningStudent, setAssigningStudent] = useState<StudentDto | null>(null);
-  const [selectedClassId, setSelectedClassId] = useState('');
-  const [selectedTeacherId, setSelectedTeacherId] = useState('');
+  const [assigningStudent, setAssigningStudent] = useState<StudentDto | null>(null); // null => bulk mode
+  const [assignCohort, setAssignCohort] = useState('');
+  const [assignAdvisorId, setAssignAdvisorId] = useState('');
   const [allTeachersList, setAllTeachersList] = useState<TeacherDto[]>([]);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -83,76 +84,25 @@ export function Students() {
     async function loadData() {
       setLoading(true);
       try {
-        // Fetch classes - CHỈ LẤY LỚP HÀNH CHÍNH (ADMINISTRATIVE CLASSES)
-        const classesPage = await classService.getAll(0, 100);
-        const allClassesList = classesPage.content || [];
-        
-        // ✅ FILTER: Chỉ lấy lớp hành chính (class code bắt đầu bằng DA)
-        const adminClassesList = allClassesList.filter(cls => {
-          // Lọc theo mã lớp: DA22TTD, DA23CNTT, DA24AI...
-          return cls.classCode && cls.classCode.startsWith('DA');
-        });
-        
-        setClasses(adminClassesList);
-
-        // Fetch teachers
+        // Fetch teachers (for advisor dropdown + name mapping)
         const teachersPage = await teacherService.getAll(0, 200).catch(() => ({ content: [] }));
         setAllTeachersList(teachersPage.content || []);
 
-        // Map student IDs to their classes
-        const studentToClassMap: Record<string, { classId: string; className: string; classCode: string }> = {};
-        for (const cls of adminClassesList) {
-          try {
-            const activeStudents = await classService.getActiveStudents(cls.id);
-            activeStudents.forEach(s => {
-              studentToClassMap[s.id] = { 
-                classId: cls.id, 
-                className: cls.className,
-                classCode: cls.classCode
-              };
-            });
-          } catch (e) {
-            console.warn("Failed to load students for class: " + cls.id, e);
-          }
-        }
-
-        // Fetch students
+        // Fetch students (dto đã có advisorId + cohort)
         let studentsList: StudentDto[] = [];
         if (searchTerm) {
-          const searchRes = await studentService.searchByName(searchTerm, 0, 100);
+          const searchRes = await studentService.searchByName(searchTerm, 0, 200);
           studentsList = searchRes.content || [];
         } else {
-          const allRes = await studentService.getAll(0, 100);
+          const allRes = await studentService.getAll(0, 200);
           studentsList = allRes.content || [];
         }
 
-        // Apply class filtering if selected
-        if (filterClass !== 'all') {
-          try {
-            const classStudents = await classService.getActiveStudents(filterClass);
-            studentsList = classStudents;
-          } catch (e) {
-            console.warn("Could not fetch active students for class, filtering locally", e);
-          }
-        }
-
-        // Enrich students with class info
-        const enriched = studentsList.map(s => ({
-          ...s,
-          classId: studentToClassMap[s.id]?.classId || '',
-          className: studentToClassMap[s.id]?.className || 'Chưa phân lớp',
-          classCode: studentToClassMap[s.id]?.classCode || ''
-        }));
-
-        setStudents(enriched);
+        setStudents(studentsList);
       } catch (err) {
         console.error("Error loading students/classes", err);
-        toast.error("Không thể kết nối đến microservices. Đang hiển thị dữ liệu mô phỏng.");
-        // Fallback mock list for demo stability
-        setStudents([
-          { id: '1', studentCode: 'DA22TTD001', firstName: 'Nguyễn Văn', lastName: 'An', email: 'an.da22ttd@tvu.edu.vn', phoneNumber: '0987654321', dateOfBirth: '2004-05-15', gender: 'MALE', address: 'Trà Vinh', avatarUrl: null, status: 'ACTIVE', enrollmentDate: '2022-09-01' },
-          { id: '2', studentCode: 'DA25TTNT002', firstName: 'Lê Thị', lastName: 'Bình', email: 'binh.da25ttnt@tvu.edu.vn', phoneNumber: '0912345678', dateOfBirth: '2007-10-20', gender: 'FEMALE', address: 'Càng Long, Trà Vinh', avatarUrl: null, status: 'ACTIVE', enrollmentDate: '2025-09-01' }
-        ]);
+        toast.error("Không thể tải danh sách sinh viên từ máy chủ.");
+        setStudents([]);
       } finally {
         setLoading(false);
       }
@@ -187,7 +137,9 @@ export function Students() {
         dateOfBirth: addForm.dateOfBirth,
         gender: addForm.gender,
         address: addForm.address,
-        enrollmentDate: addForm.enrollmentDate
+        enrollmentDate: addForm.enrollmentDate,
+        major: addForm.major,
+        cohort: addForm.classCode
       });
 
       // Save metadata to localStorage under student ID
@@ -325,11 +277,11 @@ export function Students() {
       };
       localStorage.setItem(`student_meta_${editingStudent.id}`, JSON.stringify(metadata));
 
-      // Update student profile in DB
+      // Update student profile in DB (bao gồm ngành + mã lớp cohort - lưu thật)
       await studentService.update(editingStudent.id, {
         ...editForm,
         major: editForm.major,
-        academicYear: editForm.academicYear
+        cohort: editForm.classCode
       });
 
       toast.success("Cập nhật thông tin sinh viên thành công!");
@@ -344,62 +296,76 @@ export function Students() {
     }
   };
 
-  const handleOpenAssignModal = (student: StudentDto) => {
+  // Tên giáo viên cố vấn theo id
+  const teacherName = (id?: string | null) => {
+    if (!id) return '';
+    const t = allTeachersList.find(x => x.id === id);
+    return t ? `${t.lastName} ${t.firstName}` : '';
+  };
+
+  // Các mã cohort đã tồn tại (gợi ý)
+  const cohortOptions = Array.from(new Set(students.map(s => s.cohort).filter(Boolean))) as string[];
+
+  // Sinh viên hiển thị theo tab + lọc cohort
+  const visibleStudents = students.filter(s => {
+    const matchTab = activeTab === 'unassigned' ? !s.advisorId : !!s.advisorId;
+    const matchCohort = activeTab === 'assigned' ? (filterClass === 'all' || s.cohort === filterClass) : true;
+    return matchTab && matchCohort;
+  });
+
+  // Mở modal gán nhanh cho 1 sinh viên
+  const openSingleAssign = (student: StudentDto) => {
     setAssigningStudent(student);
-    setSelectedClassId(student.classId || '');
-    const currentClass = classes.find(c => c.id === student.classId);
-    setSelectedTeacherId(currentClass?.teacherId || '');
+    setAssignCohort(student.cohort || '');
+    setAssignAdvisorId(student.advisorId || '');
     setShowAssignModal(true);
   };
 
-  const handleClassChangeInAssign = (classId: string) => {
-    setSelectedClassId(classId);
-    const selectedClass = classes.find(c => c.id === classId);
-    setSelectedTeacherId(selectedClass?.teacherId || '');
+  // Mở modal phân lớp hàng loạt (assigningStudent = null)
+  const openBulkAssign = () => {
+    if (selectedIds.size === 0) { toast.warning('Vui lòng chọn ít nhất 1 sinh viên.'); return; }
+    setAssigningStudent(null);
+    setAssignCohort('');
+    setAssignAdvisorId('');
+    setShowAssignModal(true);
   };
+
+  const toggleSelect = (id: string) => setSelectedIds(prev => {
+    const n = new Set(prev);
+    if (n.has(id)) n.delete(id); else n.add(id);
+    return n;
+  });
+
+  const toggleSelectAll = (ids: string[]) => setSelectedIds(prev => {
+    const allSelected = ids.length > 0 && ids.every(id => prev.has(id));
+    return allSelected ? new Set() : new Set(ids);
+  });
 
   const handleConfirmAssign = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!assigningStudent || !selectedClassId) {
-      toast.warning("Vui lòng chọn lớp học phần.");
+    if (!assignAdvisorId) {
+      toast.warning('Vui lòng chọn giáo viên cố vấn.');
+      return;
+    }
+    const ids = assigningStudent ? [assigningStudent.id] : Array.from(selectedIds);
+    if (ids.length === 0) {
+      toast.warning('Không có sinh viên nào được chọn.');
       return;
     }
 
     setLoading(true);
     try {
-      // Step 1: enroll student to class
-      toast.info(`Đang xếp lớp ${assigningStudent.lastName} ${assigningStudent.firstName} vào học phần...`);
-      await classService.enrollStudent(selectedClassId, assigningStudent.id);
-
-      // Step 2: update class's teacher if selected
-      if (selectedTeacherId) {
-        toast.info("Đang cập nhật giảng viên phụ trách cho học phần...");
-        const clsInfo = await classService.getById(selectedClassId);
-        await classService.update(selectedClassId, {
-          className: clsInfo.className,
-          description: clsInfo.description,
-          subject: clsInfo.subject,
-          room: clsInfo.room,
-          maxStudents: clsInfo.maxStudents,
-          schedule: clsInfo.schedule,
-          status: clsInfo.status,
-          academicYear: clsInfo.academicYear,
-          semester: clsInfo.semester,
-          startDate: clsInfo.startDate,
-          endDate: clsInfo.endDate,
-          teacherId: selectedTeacherId
-        });
-      }
-
-      toast.success("Xếp lớp & Phân công giảng viên giảng dạy thành công!");
+      const count = await studentService.bulkAssign(ids, assignAdvisorId, assignCohort || undefined);
+      toast.success(`Đã phân ${count} sinh viên vào lớp cố vấn${assignCohort ? ' ' + assignCohort : ''} (GV ${teacherName(assignAdvisorId)}).`);
       setShowAssignModal(false);
       setAssigningStudent(null);
-      setSelectedClassId('');
-      setSelectedTeacherId('');
+      setAssignCohort('');
+      setAssignAdvisorId('');
+      setSelectedIds(new Set());
       setRefreshTrigger(prev => prev + 1);
     } catch (err: any) {
       console.error(err);
-      toast.error(err.response?.data?.message || err.message || "Phân lớp thất bại.");
+      toast.error(err.response?.data?.message || err.message || 'Phân lớp thất bại.');
     } finally {
       setLoading(false);
     }
@@ -437,7 +403,7 @@ export function Students() {
         {/* Tab Selector */}
         <div className="flex border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/50">
           <button
-            onClick={() => { setActiveTab('unassigned'); setFilterClass('all'); }}
+            onClick={() => { setActiveTab('unassigned'); setFilterClass('all'); setSelectedIds(new Set()); }}
             className={`flex-1 py-5 px-6 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 ${
               activeTab === 'unassigned'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900'
@@ -445,10 +411,10 @@ export function Students() {
             }`}
           >
             <UserPlus className="w-5 h-5" />
-            Sinh viên mới (Chưa phân lớp) ({students.filter(s => !s.classId).length})
+            Sinh viên mới (Chưa phân lớp) ({students.filter(s => !s.advisorId).length})
           </button>
           <button
-            onClick={() => setActiveTab('assigned')}
+            onClick={() => { setActiveTab('assigned'); setSelectedIds(new Set()); }}
             className={`flex-1 py-5 px-6 text-sm font-bold transition-all border-b-2 flex items-center justify-center gap-2 ${
               activeTab === 'assigned'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900'
@@ -456,7 +422,7 @@ export function Students() {
             }`}
           >
             <GraduationCap className="w-5 h-5" />
-            Danh sách lớp học & Thành viên ({students.filter(s => s.classId).length})
+            Đã phân lớp cố vấn ({students.filter(s => !!s.advisorId).length})
           </button>
         </div>
 
@@ -481,33 +447,35 @@ export function Students() {
                 onChange={(e) => setFilterClass(e.target.value)}
                 className="px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer w-full md:w-64"
               >
-                <option value="all">Tất cả lớp khóa</option>
-                {classes.map(cls => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.classCode}
-                  </option>
+                <option value="all">Tất cả lớp cố vấn</option>
+                {cohortOptions.map(code => (
+                  <option key={code} value={code}>{code}</option>
                 ))}
               </select>
             )}
           </div>
 
-          {/* Active Class Size banner for Assigned Tab */}
-          {activeTab === 'assigned' && filterClass !== 'all' && (
-            (() => {
-              const clsObj = classes.find(c => c.id === filterClass);
-              if (!clsObj) return null;
-              return (
-                <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 rounded-2xl border border-emerald-200/50 dark:border-emerald-900/10 flex items-center justify-between">
-                  <div className="text-left">
-                    <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Thông tin lớp học phần</p>
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white mt-1">{clsObj.classCode}</h4>
-                  </div>
-                  <span className="text-sm font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900/20">
-                    Sĩ số: {clsObj.currentStudents || 0} / {clsObj.maxStudents} Sinh viên
-                  </span>
-                </div>
-              );
-            })()
+          {/* Bulk action bar (unassigned tab) */}
+          {activeTab === 'unassigned' && selectedIds.size > 0 && (
+            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-2xl border border-blue-200/60 dark:border-blue-900/30 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
+                Đã chọn <span className="text-blue-600 font-black">{selectedIds.size}</span> sinh viên
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-50"
+                >
+                  Bỏ chọn
+                </button>
+                <button
+                  onClick={openBulkAssign}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md"
+                >
+                  <Settings className="w-4 h-4" /> Phân lớp cố vấn hàng loạt
+                </button>
+              </div>
+            </div>
           )}
         </div>
 
@@ -516,20 +484,39 @@ export function Students() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b-2 border-slate-100 dark:border-slate-850 bg-slate-50/70 dark:bg-slate-800/15 text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
+                {activeTab === 'unassigned' && (
+                  <th className="py-4 pl-5 pr-2 w-10">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-pointer"
+                      checked={visibleStudents.length > 0 && visibleStudents.every(s => selectedIds.has(s.id))}
+                      onChange={() => toggleSelectAll(visibleStudents.map(s => s.id))}
+                      title="Chọn tất cả"
+                    />
+                  </th>
+                )}
                 <th className="py-4 px-5">Học viên</th>
                 <th className="py-4 px-5">MSSV</th>
                 <th className="py-4 px-5">Email</th>
                 <th className="py-4 px-5">Số điện thoại</th>
-                <th className="py-4 px-5">Lớp học phần</th>
+                <th className="py-4 px-5">Lớp cố vấn</th>
                 <th className="py-4 px-5">Trạng thái</th>
                 <th className="py-4 px-5 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30 text-sm font-medium text-slate-700 dark:text-slate-350">
-              {students
-                .filter(student => activeTab === 'unassigned' ? !student.classId : !!student.classId)
-                .map((student) => (
-                  <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
+              {visibleStudents.map((student) => (
+                  <tr key={student.id} className={`transition-colors ${selectedIds.has(student.id) ? 'bg-blue-50/60 dark:bg-blue-950/15' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/10'}`}>
+                    {activeTab === 'unassigned' && (
+                      <td className="py-4 pl-5 pr-2">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-pointer"
+                          checked={selectedIds.has(student.id)}
+                          onChange={() => toggleSelect(student.id)}
+                        />
+                      </td>
+                    )}
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
                         <img
@@ -540,7 +527,7 @@ export function Students() {
                         <div>
                           <p className="font-bold text-slate-900 dark:text-white text-sm">{student.lastName} {student.firstName}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-500 font-medium mt-0.5">
-                            {student.className || 'Chưa phân lớp'}
+                            {student.cohort || 'Chưa phân lớp'}
                           </p>
                         </div>
                       </div>
@@ -548,11 +535,16 @@ export function Students() {
                     <td className="py-4 px-5 font-mono font-bold text-slate-900 dark:text-slate-200">{student.studentCode}</td>
                     <td className="py-4 px-5 text-slate-600 dark:text-slate-400">{student.email}</td>
                     <td className="py-4 px-5 text-slate-600 dark:text-slate-400">{student.phoneNumber || '—'}</td>
-                    <td className="py-4 px-5 font-bold text-slate-700 dark:text-slate-300">
-                      {student.classCode ? (
-                        <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-850 rounded-xl text-slate-700 dark:text-slate-350 border border-slate-200/50 dark:border-slate-800/40 text-xs">
-                          {student.classCode}
-                        </span>
+                    <td className="py-4 px-5">
+                      {student.advisorId ? (
+                        <div className="flex flex-col gap-1">
+                          {student.cohort && (
+                            <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-950/20 rounded-lg text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-900/30 text-xs font-bold font-mono w-fit">
+                              {student.cohort}
+                            </span>
+                          )}
+                          <span className="text-xs text-slate-500 font-semibold">CV: {teacherName(student.advisorId) || '—'}</span>
+                        </div>
                       ) : (
                         <span className="text-slate-400 font-medium">Chưa phân lớp</span>
                       )}
@@ -570,9 +562,9 @@ export function Students() {
                     <td className="py-3 px-5 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => handleOpenAssignModal(student)}
+                          onClick={() => openSingleAssign(student)}
                           className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-all"
-                          title="Phân lớp & Giảng viên"
+                          title="Phân lớp cố vấn"
                         >
                           <Settings className="w-4 h-4" />
                         </button>
@@ -605,7 +597,7 @@ export function Students() {
           </table>
         </div>
 
-        {students.filter(student => activeTab === 'unassigned' ? !student.classId : !!student.classId).length === 0 && (
+        {visibleStudents.length === 0 && (
           <div className="text-center py-16">
             <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-500 font-semibold text-sm">Không tìm thấy sinh viên nào trong danh sách</p>
@@ -1064,9 +1056,13 @@ export function Students() {
                 {/* Reset password button mimicking the layout */}
                 <button
                   type="button"
-                  onClick={() => {
-                    if (window.confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu cho tài khoản ${editingStudent.studentCode}?`)) {
-                      toast.success(`Đặt lại mật khẩu mặc định (Password@123) thành công!`);
+                  onClick={async () => {
+                    if (!window.confirm(`Đặt lại mật khẩu cho tài khoản ${editingStudent.studentCode} về mặc định?`)) return;
+                    try {
+                      const pw = await authService.resetPassword(editingStudent.email);
+                      toast.success(`Đã đặt lại mật khẩu về: ${pw}`);
+                    } catch (err: any) {
+                      toast.error(err.response?.data?.message || 'Đặt lại mật khẩu thất bại.');
                     }
                   }}
                   className="px-4.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 uppercase tracking-wide"
@@ -1096,21 +1092,18 @@ export function Students() {
         </div>
       )}
 
-      {/* Quick Assign Class & Teacher Modal */}
-      {showAssignModal && assigningStudent && (
+      {/* Assign to Advisor Class Modal (single or bulk) */}
+      {showAssignModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#111827] border border-slate-800 text-slate-100 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-800/80 bg-[#0f172a]">
               <h3 className="font-extrabold text-white text-base flex items-center gap-2">
                 <Settings className="w-5.5 h-5.5 text-blue-500" />
-                XẾP LỚP & PHÂN CÔNG GIẢNG VIÊN
+                PHÂN LỚP CỐ VẤN
               </h3>
               <button
-                onClick={() => {
-                  setShowAssignModal(false);
-                  setAssigningStudent(null);
-                }}
+                onClick={() => { setShowAssignModal(false); setAssigningStudent(null); }}
                 className="p-1.5 hover:bg-slate-800 rounded-xl transition-colors text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
@@ -1119,66 +1112,56 @@ export function Students() {
 
             <form onSubmit={handleConfirmAssign} className="p-6 space-y-5 bg-[#111827] text-left">
               <div className="p-4 bg-[#0f172a] border border-slate-800 rounded-2xl space-y-1">
-                <p className="text-xs font-black uppercase text-slate-500 tracking-wider">Học sinh được xếp</p>
-                <p className="text-sm font-bold text-white">{assigningStudent.lastName} {assigningStudent.firstName}</p>
-                <p className="text-xs text-blue-400 font-mono mt-0.5">MSSV: {assigningStudent.studentCode}</p>
+                <p className="text-xs font-black uppercase text-slate-500 tracking-wider">Sinh viên được phân</p>
+                {assigningStudent ? (
+                  <>
+                    <p className="text-sm font-bold text-white">{assigningStudent.lastName} {assigningStudent.firstName}</p>
+                    <p className="text-xs text-blue-400 font-mono mt-0.5">MSSV: {assigningStudent.studentCode}</p>
+                  </>
+                ) : (
+                  <p className="text-sm font-bold text-white">{selectedIds.size} sinh viên đã chọn</p>
+                )}
               </div>
 
-              {/* Class Dropdown */}
+              {/* Advisor teacher (bắt buộc) */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Lớp học phần mở lớp (*)</label>
-                <input
-                  list="class-list-assign"
-                  value={classes.find(c => c.id === selectedClassId)?.classCode || ''}
-                  onChange={(e) => {
-                    const inputValue = e.target.value.toUpperCase().trim();
-                    const matchedClass = classes.find(c => c.classCode === inputValue);
-                    if (matchedClass) {
-                      handleClassChangeInAssign(matchedClass.id);
-                    } else {
-                      setSelectedClassId('');
-                    }
-                  }}
-                  placeholder="Chọn hoặc nhập mã lớp (VD: DA22TTD)"
-                  className="w-full px-3.5 py-3 text-sm bg-[#0f172a] border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/35 focus:border-blue-500 text-white font-bold uppercase"
-                  required
-                />
-                <datalist id="class-list-assign">
-                  {classes.map(c => (
-                    <option key={c.id} value={c.classCode} />
-                  ))}
-                </datalist>
-                <p className="text-[10px] text-slate-500 mt-1">Có thể chọn từ danh sách hoặc nhập trực tiếp mã lớp</p>
-              </div>
-
-              {/* Teacher Dropdown */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Giảng viên giảng dạy</label>
+                <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Giáo viên cố vấn (*)</label>
                 <select
-                  value={selectedTeacherId}
-                  onChange={(e) => setSelectedTeacherId(e.target.value)}
+                  value={assignAdvisorId}
+                  onChange={(e) => setAssignAdvisorId(e.target.value)}
                   className="w-full px-3.5 py-3 text-sm bg-[#0f172a] border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/35 focus:border-blue-500 text-white font-bold cursor-pointer"
+                  required
                 >
-                  <option value="">-- Phân công giảng viên giảng dạy --</option>
+                  <option value="">-- Chọn giáo viên cố vấn --</option>
                   {allTeachersList.map(t => (
                     <option key={t.id} value={t.id}>
                       {t.lastName} {t.firstName} ({t.teacherCode})
                     </option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-500 font-semibold mt-1 leading-normal">
-                  * Tùy chọn: Chọn giảng viên để tự động gán/thay đổi người phụ trách lớp học phần này ngay lập tức.
-                </p>
+              </div>
+
+              {/* Cohort code (tùy chọn) */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-extrabold text-slate-400 uppercase tracking-wider">Mã lớp hành chính</label>
+                <input
+                  list="cohort-list-assign"
+                  value={assignCohort}
+                  onChange={(e) => setAssignCohort(e.target.value.toUpperCase())}
+                  placeholder="VD: DA22TTD"
+                  className="w-full px-3.5 py-3 text-sm bg-[#0f172a] border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/35 focus:border-blue-500 text-white font-bold uppercase"
+                />
+                <datalist id="cohort-list-assign">
+                  {cohortOptions.map(c => <option key={c} value={c} />)}
+                </datalist>
+                <p className="text-[10px] text-slate-500 mt-1">Nhãn lớp/cohort. Có thể chọn mã đã có hoặc nhập mới.</p>
               </div>
 
               {/* Action buttons */}
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-800 mt-5">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowAssignModal(false);
-                    setAssigningStudent(null);
-                  }}
+                  onClick={() => { setShowAssignModal(false); setAssigningStudent(null); }}
                   className="px-4.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all active:scale-95"
                 >
                   HỦY BỎ
@@ -1188,7 +1171,7 @@ export function Students() {
                   disabled={loading}
                   className="px-5.5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  XÁC NHẬN PHÂN PHỐI
+                  XÁC NHẬN PHÂN LỚP
                 </button>
               </div>
             </form>

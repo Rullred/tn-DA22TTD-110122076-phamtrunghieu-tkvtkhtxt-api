@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { classService, ClassDto } from '../../../services/classService';
 import { teacherService, TeacherDto } from '../../../services/teacherService';
-import { Search, Plus, Edit, Trash2, Users, AlertCircle, BookOpen, Calendar, MapPin, X, PlusCircle, User, ShieldAlert } from 'lucide-react';
+import { proposalService, TeachingProposalDto } from '../../../services/proposalService';
+import { Search, Plus, Edit, Trash2, Users, AlertCircle, BookOpen, Calendar, MapPin, X, PlusCircle, User, ShieldAlert, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import teacherIcon from '../../../assets/teacher-icon.png';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -14,7 +15,7 @@ export function Classes() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Proposals & Tab state
-  const [proposals, setProposals] = useState<any[]>([]);
+  const [proposals, setProposals] = useState<TeachingProposalDto[]>([]);
   const [activeClassTab, setActiveClassTab] = useState<'classes' | 'proposals'>('classes');
 
   // Modal State
@@ -33,8 +34,10 @@ export function Classes() {
     academicYear: '2025-2026',
     semester: 1,
     startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 4 months later
+    endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 4 months later
+    schedule: ''
   });
+  const [scheduleDay, setScheduleDay] = useState('Thứ 2');
   const [editForm, setEditForm] = useState({
     className: '',
     description: '',
@@ -62,55 +65,13 @@ export function Classes() {
         const teachersPage = await teacherService.getAll(0, 100);
         setTeachers(teachersPage.content || []);
 
-        // Load proposals from localStorage
-        const stored = localStorage.getItem('teacher_proposals');
-        if (stored) {
-          setProposals(JSON.parse(stored));
-        } else {
-          setProposals([]);
-        }
+        // Load proposals from backend (chia sẻ giữa mọi tài khoản, không còn localStorage)
+        const props = await proposalService.list().catch(() => []);
+        setProposals(props);
       } catch (err) {
         console.error("Error loading classes data", err);
-        toast.error("Không thể kết nối đến backend. Đang sử dụng dữ liệu mô phỏng.");
-        // Fallback mock
-        setClasses([
-          {
-            id: 'c1',
-            classCode: 'DA22TTD',
-            className: 'Lớp K22 Công nghệ thông tin D',
-            description: 'Lớp học phần chính thức khóa 22',
-            teacherId: 't1',
-            teacherName: 'Nguyễn Văn A',
-            subject: 'Lập trình hướng đối tượng',
-            room: 'B11.201',
-            maxStudents: 45,
-            currentStudents: 28,
-            schedule: 'Thứ 2 (Tiết 1-3)',
-            status: 'ACTIVE',
-            academicYear: '2023-2024',
-            semester: 1,
-            startDate: '2023-09-05',
-            endDate: '2024-01-15'
-          },
-          {
-            id: 'c2',
-            classCode: 'DA25TTNT',
-            className: 'Lớp K25 Trí tuệ nhân tạo',
-            description: 'Lớp học chất lượng cao khóa 25',
-            teacherId: null,
-            teacherName: null,
-            subject: 'Trí tuệ nhân tạo (AI)',
-            room: 'B11.304',
-            maxStudents: 30,
-            currentStudents: 0,
-            schedule: 'Thứ 5 (Tiết 7-9)',
-            status: 'ACTIVE',
-            academicYear: '2025-2026',
-            semester: 1,
-            startDate: '2025-09-05',
-            endDate: '2026-01-15'
-          }
-        ]);
+        toast.error("Không thể tải danh sách lớp học từ máy chủ.");
+        setClasses([]);
       } finally {
         setLoading(false);
       }
@@ -118,33 +79,26 @@ export function Classes() {
     loadData();
   }, [refreshTrigger]);
 
-  const handleCreateFromProposal = (prop: any) => {
-    // Generate classCode automatically
-    const initials = prop.subjectName
-      .split(' ')
-      .map((w: string) => w[0])
-      .join('')
-      .toUpperCase();
-    const randomNum = Math.floor(100 + Math.random() * 900);
-    const classCode = `${initials}${randomNum}`;
+  const handleApproveProposal = async (prop: TeachingProposalDto) => {
+    if (!window.confirm(`Duyệt đề xuất dạy môn "${prop.subject}" của ${prop.teacherName || 'GV'}?\nHệ thống sẽ tạo lớp học phần chính thức.`)) return;
+    try {
+      await proposalService.approve(prop.id);
+      toast.success('Đã duyệt và tạo lớp học phần.');
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Duyệt đề xuất thất bại.');
+    }
+  };
 
-    setAddForm({
-      classCode,
-      className: `Lớp ${prop.subjectName} (${prop.teacherName})`,
-      description: `Lớp học phần chính thức mở từ đề xuất của GV ${prop.teacherName}`,
-      teacherId: prop.teacherId,
-      subject: prop.subjectName,
-      room: 'B11.201',
-      maxStudents: 40,
-      academicYear: prop.academicYear || '2025-2026',
-      semester: prop.semester || 1,
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    });
-    
-    // Switch view to classes list so they can see the modal
-    setActiveClassTab('classes');
-    setShowAddModal(true);
+  const handleRejectProposal = async (prop: TeachingProposalDto) => {
+    const reason = window.prompt('Lý do từ chối (tùy chọn):') || undefined;
+    try {
+      await proposalService.reject(prop.id, reason);
+      toast.success('Đã từ chối đề xuất.');
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Từ chối đề xuất thất bại.');
+    }
   };
 
   const handleCreateClass = async (e: React.FormEvent) => {
@@ -163,7 +117,8 @@ export function Classes() {
         academicYear: addForm.academicYear,
         semester: addForm.semester,
         startDate: addForm.startDate,
-        endDate: addForm.endDate
+        endDate: addForm.endDate,
+        schedule: addForm.schedule
       });
 
       toast.success("Tạo lớp học phần mới thành công!");
@@ -179,7 +134,8 @@ export function Classes() {
         academicYear: '2025-2026',
         semester: 1,
         startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        endDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        schedule: ''
       });
       setRefreshTrigger(prev => prev + 1);
     } catch (err: any) {
@@ -302,7 +258,7 @@ export function Classes() {
             }`}
           >
             <Users className="w-5 h-5" />
-            Môn học Giảng viên đăng ký dạy ({proposals.length})
+            Môn học Giảng viên đăng ký dạy ({proposals.filter(p => p.status === 'CHO_DUYET').length})
           </button>
         </div>
 
@@ -461,28 +417,45 @@ export function Classes() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/30 text-sm font-medium text-slate-700 dark:text-slate-350">
-                {proposals.map((prop, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
+                {proposals.map((prop) => (
+                  <tr key={prop.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 transition-colors">
                     <td className="py-4 px-5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
                       <img src={teacherIcon} className="w-8 h-8 rounded-full bg-white border border-slate-200 object-cover" alt="teacher" />
-                      <span>{prop.teacherName}</span>
+                      <span>{prop.teacherName || '—'}</span>
                     </td>
                     <td className="py-4 px-5 font-mono font-bold text-blue-600 dark:text-blue-400 text-sm">
-                      {prop.subjectName}
+                      {prop.subject}
                     </td>
                     <td className="py-4 px-5 font-semibold">
                       Học kỳ {prop.semester} ({prop.academicYear})
                     </td>
                     <td className="py-4 px-5 text-slate-600 italic">
-                      {prop.notes || 'Không có ghi chú'}
+                      {prop.notes || prop.description || 'Không có ghi chú'}
+                      {prop.status === 'TU_CHOI' && prop.rejectionReason && (
+                        <span className="block not-italic text-rose-600 text-xs font-semibold mt-1">Từ chối: {prop.rejectionReason}</span>
+                      )}
                     </td>
                     <td className="py-4 px-5 text-right">
-                      <button
-                        onClick={() => handleCreateFromProposal(prop)}
-                        className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-750 text-white rounded-xl text-sm font-bold shadow-md transition-colors active:scale-95"
-                      >
-                        Tạo lớp học phần
-                      </button>
+                      {prop.status === 'CHO_DUYET' ? (
+                        <div className="inline-flex items-center gap-2">
+                          <button onClick={() => handleApproveProposal(prop)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold shadow-md transition-colors active:scale-95">
+                            <Check className="w-4 h-4" /> Duyệt & tạo lớp
+                          </button>
+                          <button onClick={() => handleRejectProposal(prop)}
+                            className="inline-flex items-center gap-1.5 px-3 py-2.5 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl text-sm font-bold transition-colors">
+                            <X className="w-4 h-4" /> Từ chối
+                          </button>
+                        </div>
+                      ) : prop.status === 'DA_DUYET' ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <Check className="w-3.5 h-3.5" /> Đã duyệt
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          <X className="w-3.5 h-3.5" /> Đã từ chối
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -648,6 +621,44 @@ export function Classes() {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Lịch học + ca học mặc định (1.6) */}
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold text-slate-650 dark:text-slate-350 uppercase">Lịch học</label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={scheduleDay}
+                    onChange={(e) => setScheduleDay(e.target.value)}
+                    className="px-3 py-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-slate-800 dark:text-white cursor-pointer"
+                  >
+                    {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ nhật'].map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  {[
+                    { label: 'Ca sáng · 07:00–10:30', range: '7h-10h30' },
+                    { label: 'Ca chiều · 13:00–16:30', range: '13h-16h30' },
+                    { label: 'Ca tối · 18:30–21:00', range: '18h30-21h' },
+                  ].map(shift => (
+                    <button
+                      key={shift.range}
+                      type="button"
+                      onClick={() => setAddForm({ ...addForm, schedule: `${scheduleDay}, ${shift.range}` })}
+                      className="px-3 py-2.5 text-xs font-bold rounded-xl border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+                    >
+                      {shift.label}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={addForm.schedule}
+                  onChange={(e) => setAddForm({ ...addForm, schedule: e.target.value })}
+                  className="w-full px-3 py-3 text-sm border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-500 bg-white dark:bg-slate-955 text-slate-800 dark:text-white"
+                  placeholder="Ví dụ: Thứ 2, 7h-10h30 (chọn ca ở trên hoặc tự nhập)"
+                />
+                <p className="text-[11px] text-slate-400">Chọn thứ rồi bấm ca học để tự điền — vẫn có thể chỉnh sửa tay. Ca mặc định: Sáng 07:00–10:30, Chiều 13:00–16:30, Tối 18:30–21:00.</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-850 mt-6">

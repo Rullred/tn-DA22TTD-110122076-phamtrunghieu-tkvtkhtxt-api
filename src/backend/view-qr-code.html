@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTP QR Code Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .qr-display {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .qr-display.show {
+            display: block;
+        }
+
+        .qr-image {
+            max-width: 300px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .qr-image img {
+            width: 100%;
+            display: block;
+        }
+
+        .manual-key {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .manual-key-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .manual-key-value {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            letter-spacing: 2px;
+            word-break: break-all;
+        }
+
+        .instructions {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .app-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .app-links a {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 10px 20px;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .app-links a:hover {
+            background: #357ae8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔐</div>
+        <h1>TOTP QR Code Viewer</h1>
+        <p class="subtitle">Hiển thị mã QR để quét bằng Google Authenticator</p>
+
+        <div class="input-group">
+            <label for="qrCodeInput">
+                Dán JSON response từ API /api/auth/totp/setup:
+            </label>
+            <textarea 
+                id="qrCodeInput" 
+                placeholder='{"secret":"ABCD1234","qrCodeDataUrl":"data:image/png;base64,...","manualEntryKey":"ABCD-1234-..."}'
+            ></textarea>
+        </div>
+
+        <button onclick="displayQR()">📱 Hiển thị QR Code</button>
+
+        <div class="error" id="error"></div>
+
+        <div class="qr-display" id="qrDisplay">
+            <h2 style="margin-bottom: 10px; color: #333;">✅ Quét mã QR này:</h2>
+            <div class="qr-image">
+                <img id="qrImage" alt="TOTP QR Code">
+            </div>
+
+            <div class="manual-key">
+                <div class="manual-key-label">🔑 Hoặc nhập thủ công:</div>
+                <div class="manual-key-value" id="manualKey"></div>
+            </div>
+
+            <div class="instructions">
+                <h3>📋 Hướng dẫn:</h3>
+                <ol>
+                    <li>Tải <strong>Google Authenticator</strong> từ App Store hoặc Google Play</li>
+                    <li>Mở app và nhấn nút <strong>"+"</strong></li>
+                    <li>Chọn <strong>"Quét mã QR"</strong> và quét mã trên</li>
+                    <li>Hoặc chọn <strong>"Nhập khóa thiết lập"</strong> và dán key ở trên</li>
+                    <li>Bạn sẽ thấy mã <strong>6 chữ số</strong> (thay đổi mỗi 30 giây)</li>
+                </ol>
+
+                <div class="app-links">
+                    <a href="https://apps.apple.com/app/google-authenticator/id388497605" target="_blank">
+                        📱 iOS App Store
+                    </a>
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank">
+                        🤖 Google Play Store
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function displayQR() {
+            const input = document.getElementById('qrCodeInput').value.trim();
+            const errorDiv = document.getElementById('error');
+            const qrDisplay = document.getElementById('qrDisplay');
+
+            // Clear previous error
+            errorDiv.classList.remove('show');
+            qrDisplay.classList.remove('show');
+
+            if (!input) {
+                showError('Vui lòng dán JSON response từ API!');
+                return;
+            }
+
+            try {
+                const data = JSON.parse(input);
+
+                if (!data.qrCodeDataUrl) {
+                    showError('JSON không chứa trường "qrCodeDataUrl"!');
+                    return;
+                }
+
+                if (!data.manualEntryKey) {
+                    showError('JSON không chứa trường "manualEntryKey"!');
+                    return;
+                }
+
+                // Display QR code
+                document.getElementById('qrImage').src = data.qrCodeDataUrl;
+                document.getElementById('manualKey').textContent = data.manualEntryKey;
+
+                // Show the display
+                qrDisplay.classList.add('show');
+
+                // Scroll to QR code
+                setTimeout(() => {
+                    qrDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+
+            } catch (e) {
+                showError('JSON không hợp lệ! Lỗi: ' + e.message);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.classList.add('show');
+        }
+
+        // Allow Enter to submit
+        document.getElementById('qrCodeInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                displayQR();
+            }
+        });
+    </script>
+</body>
+</html>

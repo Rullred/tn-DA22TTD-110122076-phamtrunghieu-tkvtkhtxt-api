@@ -215,6 +215,15 @@ export const classService = {
   },
 
   /**
+   * Chốt học kỳ cho lớp học phần. SV chưa chấm sẽ bị điểm F.
+   * @returns số sinh viên bị điểm F
+   */
+  async finalizeClass(classId: string): Promise<number> {
+    const response = await api.post<ApiResponse<number>>(`/api/classes/${classId}/finalize`);
+    return response.data.data;
+  },
+
+  /**
    * Get available classes for student registration
    */
   async getAvailableClasses(

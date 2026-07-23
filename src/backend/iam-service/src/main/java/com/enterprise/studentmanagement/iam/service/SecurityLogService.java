@@ -23,6 +23,7 @@ import java.util.List;
 public class SecurityLogService {
 
     private final SecurityLogRepository securityLogRepository;
+    private final NotificationService notificationService;
 
     /**
      * Log a security event (async)
@@ -97,6 +98,9 @@ public class SecurityLogService {
                 SecurityLog.SecurityAction.ACCOUNT_LOCKED,
                 SecurityLog.SecurityResult.WARNING,
                 String.format("Account locked for %d minutes after %d failed attempts", lockMinutes, failedAttempts));
+        notificationService.create("ATTACK", lockMinutes < 0 ? "CRITICAL" : "HIGH", username,
+                String.format("Tài khoản '%s' bị khóa sau %d lần đăng nhập sai (IP %s)", username, failedAttempts, ipAddress),
+                "/admin");
     }
 
     /**
@@ -117,6 +121,8 @@ public class SecurityLogService {
                 SecurityLog.SecurityAction.IP_BLOCKED,
                 SecurityLog.SecurityResult.WARNING,
                 "IP blocked: " + reason);
+        notificationService.create("ATTACK", "CRITICAL", ipAddress,
+                "IP " + ipAddress + " bị chặn: " + reason, "/admin");
     }
 
     /**
@@ -158,6 +164,8 @@ public class SecurityLogService {
                 SecurityLog.SecurityResult.SUCCESS,
                 "New user registered",
                 userAgent);
+        notificationService.create("ACCOUNT_PENDING", "MEDIUM", username,
+                "Tài khoản mới đăng ký: " + username + " (chờ xem xét)", "/admin/students");
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.enterprise.studentmanagement.iam.config;
 
 import com.enterprise.studentmanagement.iam.filter.RateLimitFilter;
+import com.enterprise.studentmanagement.iam.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final RateLimitFilter rateLimitFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     /**
      * Password encoder using BCrypt with strength 12
@@ -35,7 +37,7 @@ public class SecurityConfig {
 
     /**
      * Security filter chain configuration
-     * Includes Rate Limiting filter
+     * Includes Rate Limiting filter and JWT Authentication filter
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,13 +45,18 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/auth/totp/verify").permitAll()
+                // admin-reset-password: mở ở tầng Security, việc kiểm tra quyền ADMIN do controller (isAdminCaller) đảm nhiệm
+                .requestMatchers("/api/auth/admin-reset-password").permitAll()
+                .requestMatchers("/api/auth/qr-login", "/api/auth/qr-status", "/api/auth/qr-confirm").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
-            // Add Rate Limit Filter before authentication
-            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+            // Add JWT Authentication Filter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // Add Rate Limit Filter before JWT authentication
+            .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class);
         
         return http.build();
     }

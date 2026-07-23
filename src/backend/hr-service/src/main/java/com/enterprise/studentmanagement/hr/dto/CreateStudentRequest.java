@@ -47,4 +47,10 @@ public class CreateStudentRequest {
 
     @NotNull(message = "Enrollment date is required")
     private LocalDate enrollmentDate;
+
+    @Size(max = 100, message = "Major must not exceed 100 characters")
+    private String major;
+
+    @Size(max = 30, message = "Cohort must not exceed 30 characters")
+    private String cohort;
 }

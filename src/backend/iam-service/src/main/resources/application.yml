@@ -41,6 +41,23 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
+  
+  # Mail Configuration for Gmail SMTP
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your_email@gmail.com}
+    password: ${MAIL_PASSWORD:your_app_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 # Eureka Client Configuration
 eureka:
@@ -76,6 +93,9 @@ management:
   endpoint:
     health:
       show-details: always
+  health:
+    mail:
+      enabled: false
 
 # Springdoc OpenAPI configuration
 springdoc:
@@ -88,6 +108,17 @@ springdoc:
     doc-expansion: none
     display-request-duration: true
     filter: true
+
+# Application specific configuration
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+  qr:
+    # Base URL (API Gateway) reachable from the phone that scans the QR code.
+    # The QR encodes {confirm-base-url}/api/auth/qr-confirm?token=... so the
+    # confirmation page is served directly by the backend (no dependency on
+    # the frontend dev server / port 5173).
+    confirm-base-url: ${QR_CONFIRM_BASE_URL:http://localhost:8080}
 
 iam:
   security:

@@ -23,4 +23,8 @@ public class AuthResponse {
     
     private Long expiresIn; // seconds
     private UserDto user;
+    
+    // OTP verification fields
+    private boolean otpRequired;
+    private String tempToken;
 }

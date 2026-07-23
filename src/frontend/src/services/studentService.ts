@@ -15,6 +15,7 @@ export interface StudentDto {
   enrollmentDate: string;
   conductScore?: number | null;
   advisorId?: string | null;
+  cohort?: string | null;
   major?: string | null;
   academicYear?: string | null;
   createdAt?: string;
@@ -31,6 +32,8 @@ export interface CreateStudentRequest {
   gender: string;
   address: string;
   enrollmentDate: string;
+  major?: string;
+  cohort?: string;
 }
 
 export interface UpdateStudentRequest {
@@ -42,6 +45,8 @@ export interface UpdateStudentRequest {
   gender: string;
   address: string;
   status: string;
+  major?: string;
+  cohort?: string;
 }
 
 export interface PageResponse<T> {
@@ -58,6 +63,14 @@ export interface ApiResponse<T> {
   message?: string;
   data: T;
   timestamp: string;
+}
+
+export interface GpaDistribution {
+  excellentGood: number; // GPA >= 3.2
+  fair: number;          // 2.5 - 3.19
+  average: number;       // 2.0 - 2.49
+  weak: number;          // < 2.0
+  totalGraded: number;   // tổng SV đã có điểm
 }
 
 export const studentService = {
@@ -151,6 +164,14 @@ export const studentService = {
   },
 
   /**
+   * Phân bố xếp loại học lực toàn trường (tính từ điểm thật) — dùng cho widget Dashboard.
+   */
+  async getGpaDistribution(): Promise<GpaDistribution> {
+    const response = await api.get<ApiResponse<GpaDistribution>>('/api/students/gpa-distribution');
+    return response.data.data;
+  },
+
+  /**
    * Update conduct score (diem ren luyen)
    */
   async updateConductScore(id: string, conductScore: number): Promise<StudentDto> {
@@ -166,6 +187,30 @@ export const studentService = {
   async getByAdvisor(advisorId: string, page = 0, size = 100): Promise<PageResponse<StudentDto>> {
     const response = await api.get<ApiResponse<PageResponse<StudentDto>>>(`/api/students/advisor/${advisorId}`, {
       params: { page, size }
+    });
+    return response.data.data;
+  },
+
+  /**
+   * Assign or unassign a student's academic advisor (giao vien co van).
+   * Pass advisorId = teacher id to assign, or null to remove from advisor class.
+   */
+  async updateAdvisor(id: string, advisorId: string | null): Promise<StudentDto> {
+    const response = await api.put<ApiResponse<StudentDto>>(`/api/students/${id}/advisor`, {
+      advisorId
+    });
+    return response.data.data;
+  },
+
+  /**
+   * Phân nhiều sinh viên vào một lớp cố vấn cùng lúc (gán GV cố vấn + mã lớp cohort).
+   * @returns số sinh viên đã cập nhật
+   */
+  async bulkAssign(studentIds: string[], advisorId: string | null, lopHanhChinh?: string): Promise<number> {
+    const response = await api.put<ApiResponse<number>>('/api/students/bulk-assign', {
+      studentIds,
+      advisorId,
+      lopHanhChinh: lopHanhChinh || undefined,
     });
     return response.data.data;
   }

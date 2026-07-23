@@ -16,8 +16,11 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
+# Create non-root user and the uploads dir owned by that user (for tài liệu/bài nộp).
+# A fresh named volume mounted at /app/uploads inherits this ownership.
+RUN addgroup -S spring && adduser -S spring -G spring \
+    && mkdir -p /app/uploads/avatars /app/uploads/materials /app/uploads/submissions \
+    && chown -R spring:spring /app/uploads
 USER spring:spring
 
 # Copy jar from build stage

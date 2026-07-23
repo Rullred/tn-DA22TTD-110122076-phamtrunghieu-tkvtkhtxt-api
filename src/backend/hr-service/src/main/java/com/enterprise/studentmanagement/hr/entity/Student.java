@@ -82,6 +82,9 @@ public class Student extends AuditableEntity {
     @Column(name = "giao_vien_co_van_id")
     private UUID advisorId;
 
+    @Column(name = "lop_hanh_chinh", length = 30)
+    private String cohort;
+
     public enum StudentStatus {
         HOAT_DONG,
         KHONG_HOAT_DONG,

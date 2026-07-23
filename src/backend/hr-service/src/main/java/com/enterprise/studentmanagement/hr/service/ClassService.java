@@ -19,8 +19,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -136,9 +139,17 @@ public class ClassService {
             throw new BadRequestException("End date must be after start date");
         }
         
-        // Generate unique class code
-        String classCode = generateClassCode();
-        
+        // Dùng mã lớp do người tạo đặt nếu có (kiểm tra trùng), ngược lại tự sinh.
+        String classCode;
+        if (request.getClassCode() != null && !request.getClassCode().isBlank()) {
+            classCode = request.getClassCode().trim();
+            if (classRepository.existsByClassCode(classCode)) {
+                throw new BadRequestException("Mã lớp '" + classCode + "' đã tồn tại, vui lòng đổi mã khác.");
+            }
+        } else {
+            classCode = generateClassCode();
+        }
+
         // Create class entity
         SchoolClass schoolClass = SchoolClass.builder()
                 .classCode(classCode)
@@ -294,21 +305,57 @@ public class ClassService {
         if (student.getStatus() != Student.StudentStatus.HOAT_DONG) {
             throw new BadRequestException("Student is not active");
         }
-        
-        // Check if already enrolled
-        if (enrollmentRepository.existsByClassIdAndStudentId(classId, request.getStudentId())) {
-            throw new BadRequestException("Student is already enrolled in this class");
+
+        // Kiểm tra TRÙNG LỊCH với các lớp sinh viên đang đăng ký (DA_DANG_KY).
+        // Không cho đăng ký nếu thời gian học chồng chéo với một lớp đã đăng ký khác.
+        if (schoolClass.getSchedule() != null && !schoolClass.getSchedule().isBlank()) {
+            List<ClassEnrollment> activeEnrollments = enrollmentRepository
+                    .findByStudentIdAndStatus(request.getStudentId(), ClassEnrollment.EnrollmentStatus.DA_DANG_KY);
+            for (ClassEnrollment active : activeEnrollments) {
+                if (active.getClassId().equals(classId)) {
+                    continue; // bỏ qua chính lớp này (trường hợp đăng ký lại lớp đã bỏ)
+                }
+                SchoolClass other = classRepository.findById(active.getClassId()).orElse(null);
+                if (other == null || other.getSchedule() == null || other.getSchedule().isBlank()) {
+                    continue;
+                }
+                if (schedulesConflict(schoolClass.getSchedule(), other.getSchedule())) {
+                    String otherName = other.getSubject() != null && !other.getSubject().isBlank()
+                            ? other.getSubject() : other.getClassName();
+                    throw new BadRequestException(String.format(
+                            "Trùng lịch học với lớp \"%s\" (%s). Vui lòng chọn lớp khác.",
+                            otherName, other.getSchedule().trim()));
+                }
+            }
         }
-        
-        // Create enrollment
-        ClassEnrollment enrollment = ClassEnrollment.builder()
-                .classId(classId)
-                .studentId(request.getStudentId())
-                .enrollmentDate(LocalDateTime.now())
-                .status(ClassEnrollment.EnrollmentStatus.DA_DANG_KY)
-                .notes(request.getNotes())
-                .build();
-        
+
+        // Nếu đã có bản ghi đăng ký cho lớp này:
+        //  - Đang học (DA_DANG_KY) hoặc đã có kết quả (DA_HOAN_THANH/THAT_BAI) -> không cho đăng ký trùng.
+        //  - Đã bỏ học (DA_BO_HOC) -> tái kích hoạt chính bản ghi đó (đăng ký lại lớp đã bỏ).
+        ClassEnrollment enrollment = enrollmentRepository
+                .findByClassIdAndStudentId(classId, request.getStudentId())
+                .orElse(null);
+
+        if (enrollment != null) {
+            if (enrollment.getStatus() != ClassEnrollment.EnrollmentStatus.DA_BO_HOC) {
+                throw new BadRequestException("Student is already enrolled in this class");
+            }
+            // Đăng ký lại lớp đã bỏ trước đó
+            enrollment.setStatus(ClassEnrollment.EnrollmentStatus.DA_DANG_KY);
+            enrollment.setDroppedAt(null);
+            enrollment.setEnrollmentDate(LocalDateTime.now());
+            enrollment.setNotes(request.getNotes());
+        } else {
+            // Tạo bản ghi đăng ký mới
+            enrollment = ClassEnrollment.builder()
+                    .classId(classId)
+                    .studentId(request.getStudentId())
+                    .enrollmentDate(LocalDateTime.now())
+                    .status(ClassEnrollment.EnrollmentStatus.DA_DANG_KY)
+                    .notes(request.getNotes())
+                    .build();
+        }
+
         enrollment = enrollmentRepository.save(enrollment);
         
         // Update class current students count
@@ -318,6 +365,63 @@ public class ClassService {
         log.info("Student enrolled successfully: student={}, class={}", request.getStudentId(), classId);
         
         return convertToEnrollmentDto(enrollment, student, schoolClass);
+    }
+
+    // ==================== KIỂM TRA TRÙNG LỊCH HỌC ====================
+
+    // "Thứ 2", "thứ 3"..."thứ 7" -> nhóm 1 là số; "chủ nhật"/"cn" -> Chủ nhật.
+    private static final Pattern DAY_PATTERN =
+            Pattern.compile("th[uứ]\\s*([2-7])|ch[uủ]\\s*nh[aậ]t|\\bcn\\b");
+    // "7h", "7h30", "13h30" ... dạng "<giờ>h<phút?> - <giờ>h<phút?>"
+    private static final Pattern TIME_RANGE_PATTERN =
+            Pattern.compile("(\\d{1,2})h(\\d{1,2})?\\s*[-–]\\s*(\\d{1,2})h(\\d{1,2})?");
+
+    /** Một ca học: thứ trong tuần (2..7, 8 = Chủ nhật) + phút bắt đầu/kết thúc trong ngày. */
+    private record ScheduleSlot(int day, int startMinute, int endMinute) {}
+
+    /**
+     * Parse chuỗi lịch học tự do (vd "Thứ 2, 7h-9h30; Thứ 4, 13h30-16h") thành danh sách ca học.
+     * Mỗi đoạn ngăn cách bởi ';' hoặc '|' là một ca. Đoạn không nhận dạng được sẽ bị bỏ qua
+     * (an toàn: không parse được -> không coi là trùng, tránh chặn nhầm).
+     */
+    private List<ScheduleSlot> parseScheduleSlots(String schedule) {
+        List<ScheduleSlot> slots = new ArrayList<>();
+        if (schedule == null || schedule.isBlank()) return slots;
+        for (String part : schedule.toLowerCase().split("[;|]")) {
+            String p = part.trim();
+            if (p.isEmpty()) continue;
+
+            Matcher dm = DAY_PATTERN.matcher(p);
+            if (!dm.find()) continue;
+            int day = dm.group(1) != null ? Integer.parseInt(dm.group(1)) : 8; // 8 = Chủ nhật
+
+            Matcher tm = TIME_RANGE_PATTERN.matcher(p);
+            if (!tm.find()) continue;
+            int startMinute = Integer.parseInt(tm.group(1)) * 60
+                    + (tm.group(2) != null && !tm.group(2).isEmpty() ? Integer.parseInt(tm.group(2)) : 0);
+            int endMinute = Integer.parseInt(tm.group(3)) * 60
+                    + (tm.group(4) != null && !tm.group(4).isEmpty() ? Integer.parseInt(tm.group(4)) : 0);
+            if (endMinute <= startMinute) continue; // giờ không hợp lệ -> bỏ qua
+
+            slots.add(new ScheduleSlot(day, startMinute, endMinute));
+        }
+        return slots;
+    }
+
+    /** Hai lịch học có trùng nhau không: có ca cùng thứ và khoảng thời gian giao nhau. */
+    private boolean schedulesConflict(String scheduleA, String scheduleB) {
+        List<ScheduleSlot> a = parseScheduleSlots(scheduleA);
+        List<ScheduleSlot> b = parseScheduleSlots(scheduleB);
+        for (ScheduleSlot x : a) {
+            for (ScheduleSlot y : b) {
+                if (x.day() == y.day()
+                        && x.startMinute() < y.endMinute()
+                        && y.startMinute() < x.endMinute()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -389,6 +493,47 @@ public class ClassService {
         SchoolClass schoolClass = classRepository.findById(enrollment.getClassId()).orElse(null);
         
         return convertToEnrollmentDto(enrollment, student, schoolClass);
+    }
+
+    /**
+     * Chốt học kỳ cho một lớp học phần.
+     * Mọi sinh viên đã đăng ký (DA_DANG_KY) mà CHƯA được chấm điểm (totalGrade10 == null)
+     * sẽ bị điểm F (rớt môn) theo quy tắc: đăng ký nhưng không được chấm = trượt.
+     * Sinh viên đã có điểm được đánh dấu hoàn thành. Lớp chuyển sang DA_HOAN_THANH.
+     *
+     * @return số sinh viên bị điểm F sau khi chốt
+     */
+    @Transactional
+    public int finalizeClass(UUID classId) {
+        log.info("Finalizing class: {}", classId);
+
+        SchoolClass schoolClass = classRepository.findById(classId)
+                .orElseThrow(() -> new ResourceNotFoundException("Class", "id", classId));
+
+        List<ClassEnrollment> active = enrollmentRepository.findByClassIdAndStatus(
+                classId, ClassEnrollment.EnrollmentStatus.DA_DANG_KY);
+
+        int failedCount = 0;
+        for (ClassEnrollment e : active) {
+            if (e.getTotalGrade10() == null) {
+                // Đã đăng ký nhưng không được chấm -> rớt F
+                e.setTotalGrade10(0.0);
+                e.setTotalGrade4(0.0);
+                e.setLetterGrade("F");
+                e.setStatus(ClassEnrollment.EnrollmentStatus.THAT_BAI);
+                failedCount++;
+            } else {
+                // Đã có điểm -> đánh dấu hoàn thành
+                e.setStatus(ClassEnrollment.EnrollmentStatus.DA_HOAN_THANH);
+            }
+            enrollmentRepository.save(e);
+        }
+
+        schoolClass.setStatus(SchoolClass.ClassStatus.DA_HOAN_THANH);
+        classRepository.save(schoolClass);
+
+        log.info("Finalized class {}: {} students marked F (ungraded)", classId, failedCount);
+        return failedCount;
     }
 
     /**

@@ -4,7 +4,11 @@ server:
 spring:
   application:
     name: api-gateway
-  
+
+  # Cho phép buffer body lớn khi upload tệp học tập qua gateway (mặc định chỉ 256KB)
+  codec:
+    max-in-memory-size: 30MB
+
   # Redis Configuration
   data:
     redis:
@@ -83,4 +87,7 @@ gateway:
   excluded-paths:
     - /api/auth/login
     - /api/auth/register
+    - /api/auth/qr-login
+    - /api/auth/qr-confirm
+    - /api/auth/qr-status
     - /actuator/**

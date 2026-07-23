@@ -1,8 +1,12 @@
 package com.enterprise.studentmanagement.hr.service;
 
 import com.enterprise.studentmanagement.hr.exception.BadRequestException;
+import com.enterprise.studentmanagement.hr.exception.ResourceNotFoundException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -154,5 +158,86 @@ public class FileUploadService {
      */
     public String getUploadDirectory() {
         return uploadDirectory;
+    }
+
+    // ------------------------------------------------------------- Tài liệu học tập
+
+    @Value("${file.upload.doc-max-size:26214400}") // 25MB
+    private long docMaxSize;
+
+    private static final List<String> ALLOWED_DOC_EXT = Arrays.asList(
+            ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx",
+            ".zip", ".txt", ".png", ".jpg", ".jpeg", ".gif", ".webp"
+    );
+
+    /**
+     * Upload một tài liệu / bài nộp. Cho phép PDF/Office/zip/ảnh, tối đa 25MB.
+     * Lưu vào {uploads}/{subDir}/{uuid}_{tên-an-toàn}; trả metadata để lưu DB.
+     */
+    public StoredFile uploadDocument(MultipartFile file, String subDir) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("File trống");
+        }
+        if (file.getSize() > docMaxSize) {
+            throw new BadRequestException("File vượt quá dung lượng cho phép (tối đa 25MB)");
+        }
+        String original = file.getOriginalFilename() == null ? "file" : file.getOriginalFilename();
+        String ext = getFileExtension(original).toLowerCase();
+        if (!ALLOWED_DOC_EXT.contains(ext)) {
+            throw new BadRequestException("Loại file không được phép: " + (ext.isEmpty() ? "(không rõ)" : ext)
+                    + ". Cho phép: " + String.join(", ", ALLOWED_DOC_EXT));
+        }
+
+        String safe = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+        if (safe.length() > 120) safe = safe.substring(safe.length() - 120);
+        String stored = UUID.randomUUID().toString().substring(0, 8) + "_" + safe;
+
+        Path dir = Paths.get(uploadDirectory, subDir);
+        try {
+            Files.createDirectories(dir);
+            Files.copy(file.getInputStream(), dir.resolve(stored), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            log.error("Failed to save document", e);
+            throw new BadRequestException("Lưu file thất bại");
+        }
+        String rel = subDir + "/" + stored;
+        log.info("Uploaded document: {} ({} bytes)", rel, file.getSize());
+        return new StoredFile(rel, original, file.getContentType(), file.getSize());
+    }
+
+    /** Nạp file để stream về client. */
+    public Resource loadAsResource(String storagePath) {
+        Path p = Paths.get(uploadDirectory).resolve(storagePath).normalize();
+        Resource resource = new FileSystemResource(p);
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new ResourceNotFoundException("File not found: " + storagePath);
+        }
+        return resource;
+    }
+
+    /** Xóa file trên đĩa (bỏ qua nếu không có). */
+    public void deleteDocument(String storagePath) {
+        if (storagePath == null || storagePath.isBlank()) return;
+        try {
+            Files.deleteIfExists(Paths.get(uploadDirectory).resolve(storagePath).normalize());
+        } catch (IOException e) {
+            log.error("Failed to delete document {}", storagePath, e);
+        }
+    }
+
+    /** Metadata trả về sau khi lưu file. */
+    @Getter
+    public static class StoredFile {
+        private final String storagePath;
+        private final String fileName;
+        private final String contentType;
+        private final long size;
+
+        public StoredFile(String storagePath, String fileName, String contentType, long size) {
+            this.storagePath = storagePath;
+            this.fileName = fileName;
+            this.contentType = contentType;
+            this.size = size;
+        }
     }
 }

@@ -43,10 +43,9 @@ export function TeacherProfile() {
     async function loadTeacherData() {
       setLoading(true);
       try {
-        // Fetch all teachers to find the logged-in teacher by email
-        const teachersPage = await teacherService.getAll(0, 100);
-        const currentTeacher = teachersPage.content.find(t => t.email === user.email);
-        
+        // Lấy hồ sơ giáo viên hiện tại (tra chính xác thay vì quét toàn bộ)
+        const currentTeacher = await teacherService.getMe(user.email).catch(() => null);
+
         if (currentTeacher) {
           setTeacher(currentTeacher);
 

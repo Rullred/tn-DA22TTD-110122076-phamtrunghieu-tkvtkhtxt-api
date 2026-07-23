@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { studentService } from '../../../services/studentService';
 import { GraduationCap, AlertCircle, Eye, EyeOff, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,8 +11,15 @@ export function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student',
-    major: 'TT'
+    role: 'student', // Đăng ký công khai chỉ tạo tài khoản Sinh viên
+    major: 'TT',
+    // Hồ sơ sinh viên (tạo cùng lúc để tài khoản có đầy đủ hồ sơ)
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    dateOfBirth: '2004-01-01',
+    gender: 'NAM',
+    address: '',
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -75,20 +83,45 @@ export function Register() {
       return;
     }
 
+    if (!/^[0-9]{10}$/.test(formData.phoneNumber)) {
+      setError('Số điện thoại phải gồm đúng 10 chữ số.');
+      return;
+    }
+
     setLoading(true);
     try {
+      // Tài khoản tự đăng ký luôn là Sinh viên (backend cũng ép STUDENT nếu không phải admin)
       await register(
         formData.username,
         formData.email,
         formData.password,
-        formData.role
+        'student'
       );
-      toast.success('Đăng ký tài khoản thành công!');
-      // After register, the AuthContext will log them in and navigate.
-      // But if not redirected automatically:
+
+      // Tạo hồ sơ sinh viên cho tài khoản vừa đăng ký để trang sinh viên có dữ liệu
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
         const u = JSON.parse(storedUser);
+        if (u.role === 'student') {
+          try {
+            await studentService.create({
+              userId: u.id,
+              firstName: formData.firstName.trim(),
+              lastName: formData.lastName.trim(),
+              email: formData.email,
+              phoneNumber: formData.phoneNumber,
+              dateOfBirth: formData.dateOfBirth,
+              gender: formData.gender,
+              address: formData.address.trim() || 'Chưa cập nhật',
+              enrollmentDate: new Date().toISOString().split('T')[0],
+              major: tvuMajors.find(m => m.code === formData.major)?.name,
+            });
+          } catch (profileErr) {
+            console.error('Tạo hồ sơ sinh viên thất bại:', profileErr);
+            toast.warning('Tài khoản đã tạo nhưng chưa tạo được hồ sơ sinh viên. Vui lòng liên hệ quản trị viên.');
+          }
+        }
+        toast.success('Đăng ký tài khoản thành công!');
         navigate(`/${u.role}`);
       }
     } catch (err: any) {
@@ -169,10 +202,11 @@ export function Register() {
                 <select
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-360 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium"
+                  disabled
+                  className="w-full px-4 py-2 border border-slate-360 dark:border-slate-700 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium cursor-not-allowed"
+                  title="Đăng ký công khai chỉ dành cho Sinh viên. Tài khoản Giáo viên do quản trị viên tạo."
                 >
                   <option value="student">Sinh viên</option>
-                  <option value="teacher">Giáo viên</option>
                 </select>
               </div>
 
@@ -194,6 +228,79 @@ export function Register() {
                   </select>
                 </div>
               )}
+            </div>
+
+            {/* Thông tin hồ sơ sinh viên */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Họ và tên đệm</label>
+                <input
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-350 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium"
+                  placeholder="VD: Nguyễn Văn"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Tên</label>
+                <input
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-350 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium"
+                  placeholder="VD: An"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Số điện thoại</label>
+                <input
+                  type="text"
+                  value={formData.phoneNumber}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                  className="w-full px-4 py-2 border border-slate-350 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium"
+                  placeholder="10 chữ số"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Ngày sinh</label>
+                <input
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-350 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium cursor-pointer"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Giới tính</label>
+                <select
+                  value={formData.gender}
+                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-350 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium cursor-pointer"
+                >
+                  <option value="NAM">Nam</option>
+                  <option value="NU">Nữ</option>
+                  <option value="KHAC">Khác</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">Địa chỉ <span className="text-slate-400 normal-case font-medium">(tùy chọn)</span></label>
+              <input
+                type="text"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="w-full px-4 py-2 border border-slate-350 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/30 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-xs font-medium"
+                placeholder="VD: Trà Vinh, Việt Nam"
+              />
             </div>
 
             {/* Password input */}

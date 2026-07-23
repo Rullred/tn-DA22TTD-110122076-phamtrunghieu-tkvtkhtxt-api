@@ -38,8 +38,20 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
+    // A 401 from an auth endpoint means "wrong credentials / bad request",
+    // NOT "access token expired". Do NOT try to refresh or redirect to /login
+    // for these — otherwise a wrong-password login triggers a full page reload
+    // that wipes the warning message the login page just showed.
+    const requestUrl: string = originalRequest?.url || '';
+    const isAuthEndpoint =
+      requestUrl.includes('/api/auth/login') ||
+      requestUrl.includes('/api/auth/register') ||
+      requestUrl.includes('/api/auth/refresh') ||
+      requestUrl.includes('/api/auth/verify-otp') ||
+      requestUrl.includes('/api/auth/qr');
+
     // Token expired - Thử refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       
       try {

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { classService, ClassDto, EnrollmentDto } from '../../../services/classService';
 import { teacherService, TeacherDto } from '../../../services/teacherService';
 import { studentService, StudentDto } from '../../../services/studentService';
+import { proposalService, TeachingProposalDto } from '../../../services/proposalService';
 import {
   BookOpen, GraduationCap, TrendingUp, Award, RefreshCw, Star,
   Edit3, Check, X, ShieldAlert, CheckCircle2, UserCog, FileSpreadsheet, PlusCircle, Download
@@ -229,8 +230,12 @@ export function TeacherDashboard() {
     startDate: '2026-06-01',
     endDate: '2026-09-30'
   });
-  // 'proposal' = gửi đề xuất cho Admin duyệt | 'direct' = tạo lớp thẳng vào DB
-  const [submitMode, setSubmitMode] = useState<'proposal' | 'direct'>('proposal');
+  // Giáo viên chỉ GỬI ĐỀ XUẤT; Admin duyệt & tạo lớp chính thức (bỏ tạo lớp trực tiếp)
+  const submitMode: 'proposal' | 'direct' = 'proposal';
+  const [myProposals, setMyProposals] = useState<TeachingProposalDto[]>([]);
+  useEffect(() => {
+    if (teacher?.id) proposalService.byTeacher(teacher.id).then(setMyProposals).catch(() => setMyProposals([]));
+  }, [teacher, refreshTrigger]);
 
 
   // Load teacher profile, classes and advised students
@@ -239,8 +244,7 @@ export function TeacherDashboard() {
     async function loadTeacherData() {
       setLoading(true);
       try {
-        const teachersPage = await teacherService.getAll(0, 100);
-        const currentTeacher = teachersPage.content.find(t => t.email === user.email);
+        const currentTeacher = await teacherService.getMe(user.email).catch(() => null);
 
         if (currentTeacher) {
           setTeacher(currentTeacher);
@@ -434,31 +438,32 @@ export function TeacherDashboard() {
     });
 
     if (submitMode === 'proposal') {
-      // === PROPOSAL MODE: save to localStorage for Admin approval ===
-      const proposal = {
-        id: `prop_${Date.now()}`,
-        teacherId: teacher.id,
-        teacherName: teacher.fullName || `${teacher.lastName} ${teacher.firstName}`,
-        subjectName: newClass.subject,
-        className: newClass.className,
-        classCode: newClass.classCode,
-        description: newClass.description,
-        room: newClass.room,
-        maxStudents: newClass.maxStudents,
-        schedule: newClass.schedule,
-        academicYear: newClass.academicYear,
-        semester: newClass.semester,
-        startDate: newClass.startDate,
-        endDate: newClass.endDate,
-        notes: newClass.description || '',
-        status: 'pending',
-        submittedAt: new Date().toISOString()
-      };
-      const existing = JSON.parse(localStorage.getItem('teacher_proposals') || '[]');
-      existing.push(proposal);
-      localStorage.setItem('teacher_proposals', JSON.stringify(existing));
-      toast.success('✅ Đã gửi đề xuất đăng ký dạy môn học thành công! Admin sẽ xét duyệt và tạo lớp.');
-      resetForm();
+      // === PROPOSAL MODE: lưu vào backend để Admin (máy/tài khoản khác) đều thấy ===
+      if (!newClass.subject?.trim()) { toast.error('Vui lòng nhập tên môn học.'); return; }
+      try {
+        await proposalService.create({
+          teacherId: teacher.id,
+          teacherName: teacher.fullName || `${teacher.lastName} ${teacher.firstName}`,
+          subject: newClass.subject,
+          className: newClass.className || undefined,
+          classCode: newClass.classCode || undefined,
+          description: newClass.description || undefined,
+          room: newClass.room || undefined,
+          maxStudents: newClass.maxStudents,
+          schedule: newClass.schedule || undefined,
+          academicYear: newClass.academicYear,
+          semester: newClass.semester,
+          startDate: newClass.startDate || undefined,
+          endDate: newClass.endDate || undefined,
+          notes: newClass.description || undefined,
+        });
+        toast.success('✅ Đã gửi đề xuất đăng ký dạy môn học! Admin sẽ xét duyệt và tạo lớp.');
+        resetForm();
+        setRefreshTrigger(prev => prev + 1);
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err.response?.data?.message || 'Gửi đề xuất thất bại.');
+      }
     } else {
       // === DIRECT MODE: create class directly in DB ===
       try {
@@ -1096,41 +1101,13 @@ export function TeacherDashboard() {
         {activeTab === 'register-class' && (
           <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-5 max-w-2xl mx-auto">
             <div>
-              <h3 className="font-extrabold text-slate-800 text-base">Đăng ký dạy & Tạo lớp học phần mới</h3>
-              <p className="text-xs text-slate-500 mt-1">Chọn hình thức gửi đề xuất (Admin duyệt) hoặc tạo lớp trực tiếp ngay lập tức.</p>
+              <h3 className="font-extrabold text-slate-800 text-base">Đăng ký dạy học phần</h3>
+              <p className="text-xs text-slate-500 mt-1">Gửi đề xuất mở lớp học phần để Admin xét duyệt.</p>
             </div>
 
-            {/* Submit Mode Toggle */}
-            <div className="flex gap-3 p-1 bg-slate-100 rounded-2xl">
-              <button
-                type="button"
-                onClick={() => setSubmitMode('proposal')}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all ${
-                  submitMode === 'proposal'
-                    ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
-                    : 'text-slate-600 hover:bg-white/60'
-                }`}
-              >
-                📋 Gửi đề xuất (Admin duyệt)
-              </button>
-              <button
-                type="button"
-                onClick={() => setSubmitMode('direct')}
-                className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all ${
-                  submitMode === 'direct'
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                    : 'text-slate-600 hover:bg-white/60'
-                }`}
-              >
-                ⚡ Tạo lớp trực tiếp
-              </button>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-semibold">
+              📌 Đề xuất sẽ được gửi đến Admin để xét duyệt. Admin sẽ xem tại mục <strong>"Môn học Giảng viên đăng ký dạy"</strong> và tạo lớp chính thức.
             </div>
-
-            {submitMode === 'proposal' && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-semibold">
-                📌 Đề xuất sẽ được gửi đến Admin để xét duyệt. Admin sẽ xem tại mục <strong>"Môn học Giảng viên đăng ký dạy"</strong> và tạo lớp chính thức.
-              </div>
-            )}
 
             <form onSubmit={handleCreateClass} className="space-y-4 text-left">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1251,6 +1228,34 @@ export function TeacherDashboard() {
                 {submitMode === 'proposal' ? '📋 Gửi đề xuất cho Admin duyệt' : '⚡ Tạo lớp học phần ngay'}
               </button>
             </form>
+
+            {/* Đề xuất của tôi + trạng thái duyệt */}
+            <div className="pt-2 border-t border-slate-100">
+              <h4 className="text-xs font-bold text-slate-600 uppercase mb-2">Đề xuất của tôi ({myProposals.length})</h4>
+              {myProposals.length === 0 ? (
+                <p className="text-xs text-slate-400">Chưa có đề xuất nào. Điền form trên và gửi để Admin xét duyệt.</p>
+              ) : (
+                <div className="space-y-2">
+                  {myProposals.map((p) => {
+                    const badge = p.status === 'DA_DUYET'
+                      ? { t: 'Đã duyệt', c: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+                      : p.status === 'TU_CHOI'
+                        ? { t: 'Bị từ chối', c: 'bg-rose-50 text-rose-700 border-rose-200' }
+                        : { t: 'Chờ duyệt', c: 'bg-amber-50 text-amber-700 border-amber-200' };
+                    return (
+                      <div key={p.id} className="flex items-center justify-between gap-2 bg-slate-50 rounded-xl px-3 py-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-slate-800 truncate">{p.subject}</p>
+                          <p className="text-[11px] text-slate-500">HK{p.semester} · {p.academicYear}
+                            {p.status === 'TU_CHOI' && p.rejectionReason ? ` · Lý do: ${p.rejectionReason}` : ''}</p>
+                        </div>
+                        <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${badge.c}`}>{badge.t}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

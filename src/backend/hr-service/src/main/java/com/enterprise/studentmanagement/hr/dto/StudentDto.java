@@ -41,6 +41,7 @@ public class StudentDto {
     // New fields
     private Integer conductScore; // Điểm rèn luyện
     private UUID advisorId; // Giáo viên cố vấn
+    private String cohort; // Lớp hành chính (VD: DA22TTD)
     
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -76,6 +77,7 @@ public class StudentDto {
                 .academicYear(student.getAcademicYear())
                 .conductScore(student.getConductScore())
                 .advisorId(student.getAdvisorId())
+                .cohort(student.getCohort())
                 .createdAt(student.getCreatedAt())
                 .updatedAt(student.getUpdatedAt())
                 .createdBy(student.getCreatedBy())

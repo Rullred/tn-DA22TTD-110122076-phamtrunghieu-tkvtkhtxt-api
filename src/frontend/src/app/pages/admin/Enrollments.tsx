@@ -4,7 +4,7 @@ import { studentService, StudentDto } from '../../../services/studentService';
 import {
   Search, Trash2, Users, BookOpen, RefreshCw,
   CheckSquare, Square, X, GraduationCap,
-  UserPlus, ArrowRight, Download
+  UserPlus, ArrowRight, Download, Pencil
 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
@@ -35,6 +35,10 @@ export function Enrollments() {
 
   // --- Confirm modal state ---
   const [confirmDrop, setConfirmDrop] = useState<{ open: boolean; enrollment: EnrollmentWithStudent | null }>({ open: false, enrollment: null });
+
+  // --- Edit enrollment state (admin chỉnh sửa thông tin đăng ký) ---
+  const [editEnroll, setEditEnroll] = useState<{ open: boolean; enrollment: EnrollmentWithStudent | null }>({ open: false, enrollment: null });
+  const [editEnrollForm, setEditEnrollForm] = useState({ status: 'DA_DANG_KY', grade: '', attendanceRate: '', notes: '' });
 
   // Load classes and students
   useEffect(() => {
@@ -221,6 +225,34 @@ export function Enrollments() {
       setRefreshTrigger(prev => prev + 1);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Rút học phần thất bại.');
+    }
+  };
+
+  const openEditEnroll = (enrollment: EnrollmentWithStudent) => {
+    setEditEnrollForm({
+      status: enrollment.status || 'DA_DANG_KY',
+      grade: enrollment.letterGrade || enrollment.grade || '',
+      attendanceRate: enrollment.attendanceRate != null ? String(enrollment.attendanceRate) : '',
+      notes: enrollment.notes || '',
+    });
+    setEditEnroll({ open: true, enrollment });
+  };
+
+  const executeUpdateEnroll = async () => {
+    const enrollment = editEnroll.enrollment;
+    if (!enrollment) return;
+    try {
+      await classService.updateEnrollment(enrollment.id, {
+        status: editEnrollForm.status,
+        grade: editEnrollForm.grade || undefined,
+        attendanceRate: editEnrollForm.attendanceRate !== '' ? parseFloat(editEnrollForm.attendanceRate) : undefined,
+        notes: editEnrollForm.notes || undefined,
+      });
+      toast.success('Đã cập nhật thông tin đăng ký.');
+      setEditEnroll({ open: false, enrollment: null });
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Cập nhật đăng ký thất bại.');
     }
   };
 
@@ -628,6 +660,13 @@ export function Enrollments() {
                             </td>
                             <td className="py-4 px-5 text-right">
                               <button
+                                onClick={() => openEditEnroll(enroll)}
+                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded-xl transition-colors mr-1"
+                                title="Chỉnh sửa đăng ký"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
                                 onClick={() => handleDropStudent(enroll)}
                                 className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-colors"
                                 title="Rút học phần"
@@ -681,6 +720,74 @@ export function Enrollments() {
         onConfirm={executeDropStudent}
         onCancel={() => setConfirmDrop({ open: false, enrollment: null })}
       />
+
+      {/* Edit enrollment modal (admin chỉnh sửa thông tin đăng ký) */}
+      {editEnroll.open && editEnroll.enrollment && (
+        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setEditEnroll({ open: false, enrollment: null })}>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-850">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Chỉnh sửa đăng ký</h3>
+              <button onClick={() => setEditEnroll({ open: false, enrollment: null })} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                {editEnroll.enrollment.studentProfile
+                  ? `${editEnroll.enrollment.studentProfile.lastName} ${editEnroll.enrollment.studentProfile.firstName}`
+                  : (editEnroll.enrollment.studentName || 'Sinh viên')} · Lớp {selectedClass?.className}
+              </p>
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-slate-600 dark:text-slate-400 uppercase">Trạng thái</label>
+                <select
+                  value={editEnrollForm.status}
+                  onChange={(e) => setEditEnrollForm({ ...editEnrollForm, status: e.target.value })}
+                  className="w-full px-3 py-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-slate-800 dark:text-white cursor-pointer"
+                >
+                  <option value="DA_DANG_KY">Đang học</option>
+                  <option value="DA_HOAN_THANH">Hoàn thành</option>
+                  <option value="DA_BO_HOC">Đã rút</option>
+                  <option value="THAT_BAI">Rớt (F)</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-xs font-extrabold text-slate-600 dark:text-slate-400 uppercase">Xếp loại</label>
+                  <input
+                    type="text"
+                    value={editEnrollForm.grade}
+                    onChange={(e) => setEditEnrollForm({ ...editEnrollForm, grade: e.target.value })}
+                    placeholder="A / B / C / D / F"
+                    className="w-full px-3 py-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-955 text-slate-800 dark:text-white"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-extrabold text-slate-600 dark:text-slate-400 uppercase">Chuyên cần (%)</label>
+                  <input
+                    type="number"
+                    min={0} max={100}
+                    value={editEnrollForm.attendanceRate}
+                    onChange={(e) => setEditEnrollForm({ ...editEnrollForm, attendanceRate: e.target.value })}
+                    placeholder="0 - 100"
+                    className="w-full px-3 py-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-955 text-slate-800 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-slate-600 dark:text-slate-400 uppercase">Ghi chú</label>
+                <textarea
+                  value={editEnrollForm.notes}
+                  onChange={(e) => setEditEnrollForm({ ...editEnrollForm, notes: e.target.value })}
+                  rows={2}
+                  className="w-full px-3 py-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-955 text-slate-800 dark:text-white resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-850">
+              <button onClick={() => setEditEnroll({ open: false, enrollment: null })} className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800">Hủy</button>
+              <button onClick={executeUpdateEnroll} className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow">Lưu thay đổi</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

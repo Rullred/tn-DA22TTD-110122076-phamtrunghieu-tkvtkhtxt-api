@@ -64,69 +64,8 @@ export function StudentDetail() {
         setAllClasses(allClassesPage.content || []);
       } catch (err) {
         console.error("Error loading student detail", err);
-        toast.error("Không thể kết nối API. Hiển thị thông tin mô phỏng.");
-        // Fallback mockup
-        setStudent({
-          id: id || '1',
-          studentCode: 'DA22TTD001',
-          firstName: 'Nguyễn Văn',
-          lastName: 'An',
-          email: 'an.da22ttd@tvu.edu.vn',
-          phoneNumber: '0987654321',
-          dateOfBirth: '2004-05-15',
-          gender: 'MALE',
-          address: 'Số 126 Nguyễn Thiện Thành, Trà Vinh',
-          avatarUrl: null,
-          status: 'ACTIVE',
-          enrollmentDate: '2022-09-01'
-        });
-        setEnrollments([
-          {
-            id: 'e1',
-            classId: 'c1',
-            studentId: id || '1',
-            enrollmentDate: '2022-09-10T08:00:00',
-            status: 'ACTIVE',
-            grade: 'A',
-            attendanceRate: 98.5,
-            notes: 'Sinh viên tích cực'
-          }
-        ]);
-        setClassesDetail({
-          'c1': {
-            id: 'c1',
-            classCode: '220099',
-            className: 'Lập trình hướng đối tượng',
-            subject: 'Lập trình hướng đối tượng (OOP)',
-            room: 'B11.203',
-            maxStudents: 40,
-            currentStudents: 28,
-            schedule: 'Thứ 2 (Tiết 1-3)',
-            status: 'ACTIVE',
-            academicYear: '2023-2024',
-            semester: 1,
-            startDate: '2023-09-05',
-            endDate: '2024-01-15',
-            teacherId: 't1',
-            teacherName: 'Nguyễn Văn A'
-          }
-        });
-        setAdvisor({
-          id: 't1',
-          teacherCode: 'GV001',
-          firstName: 'Nguyễn Văn',
-          lastName: 'A',
-          email: 'nva@tvu.edu.vn',
-          phoneNumber: '0900000001',
-          dateOfBirth: '1980-01-01',
-          gender: 'MALE',
-          address: 'Trà Vinh',
-          avatarUrl: null,
-          department: 'Công nghệ thông tin',
-          specialization: 'Kỹ thuật phần mềm',
-          status: 'ACTIVE',
-          hireDate: '2010-09-01'
-        });
+        toast.error("Không thể tải thông tin sinh viên từ máy chủ.");
+        setEnrollments([]);
       } finally {
         setLoading(false);
       }

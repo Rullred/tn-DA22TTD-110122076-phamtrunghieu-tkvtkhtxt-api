@@ -54,6 +54,25 @@ public class TeacherService {
     }
 
     /**
+     * Lấy hồ sơ giáo viên của người dùng hiện tại theo userId (nguoi_dung_id),
+     * fallback theo email. Dùng cho endpoint /me — tra chính xác 1 lần thay vì quét toàn bộ.
+     */
+    @Transactional(readOnly = true)
+    public TeacherDto getCurrentTeacher(UUID userId, String email) {
+        Teacher teacher = null;
+        if (userId != null) {
+            teacher = teacherRepository.findByUserId(userId).orElse(null);
+        }
+        if (teacher == null && email != null && !email.isBlank()) {
+            teacher = teacherRepository.findByEmail(email.trim()).orElse(null);
+        }
+        if (teacher == null) {
+            throw new ResourceNotFoundException("Teacher", "current user", userId != null ? userId : email);
+        }
+        return TeacherDto.fromEntity(teacher);
+    }
+
+    /**
      * Get teacher by teacher code
      */
     @Transactional(readOnly = true)
